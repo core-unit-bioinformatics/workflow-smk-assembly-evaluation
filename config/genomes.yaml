@@ -1,0 +1,10 @@
+# TODO
+# this is project-specific
+
+refgenomes:
+  hg38:
+    any: GRCh38_HGSVC2_noalt.fasta
+  t2tv2:
+    male: chm13v2.0.fasta
+    female: chm13v2.0_maskedY.fasta
+    any: chm13v2.0.fasta
