@@ -42,7 +42,7 @@ def collect_sample_infos(sample_sheet):
     - sex (sex: f/m/u/d/x)
     """
 
-    sample_infos = col.defaultdict(dict)
+    sample_infos = collections.defaultdict(dict)
 
     sheet_columns = sample_sheet.columns
     sheet_columns = [
