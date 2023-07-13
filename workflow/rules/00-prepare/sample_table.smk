@@ -57,8 +57,8 @@ def collect_sample_infos(sample_sheet):
             sample_sex = "any"
         sample_infos[sample]["sex"] = sample_sex
         for column in sheet_columns:
-            if columns.startswith("asm_") or column.startswith("reads_"):
-                group_type, group_id = columns.split("_", 1)
+            if column.startswith("asm_") or column.startswith("reads_"):
+                group_type, group_id = column.split("_", 1)
                 check_data_identifier(group_id)
                 # three lists: file names, full path hashes,
                 # path hash prefixes [path IDs]
@@ -71,10 +71,9 @@ def collect_sample_infos(sample_sheet):
                 assert len(seq_file_infos[0]) == 1
                 # support one file per assembly unit,
                 # path hash is irrelevant
-                seq_file_infos[-1] = [None]
-                seq_file_infos[-2] = [None]
+                seq_file_infos = seq_file_infos[0], [None], [None]
 
-            for seqfile, phash, pathid in seq_file_infos:
+            for seqfile, phash, pathid in zip(*seq_file_infos):
                 sample_infos[sample][(group_type, group_id, phash)] = seqfile
                 all_key = group_type, group_id, "hash_all"
                 if all_key not in sample_infos[sample]:
@@ -253,7 +252,7 @@ def collect_sequence_input(path_spec):
             ).hexdigest()
             input_files.append(input_path)
             input_hashes.append(input_hash)
-            input_path_ids.appnd(input_hash[:PATH_ID_LENGTH])
+            input_path_ids.append(input_hash[:PATH_ID_LENGTH])
         elif input_path.is_dir():
             collected_files = _collect_files(input_path)
             collected_hashes = [
