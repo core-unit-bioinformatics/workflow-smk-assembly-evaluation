@@ -48,7 +48,7 @@ rule minimap_assembly_to_reference_align_bam:
         sam_flag_out = 1540,  # unmap, PCR-dup, QC-fail --- keep 2nd align!
         sam_threads = CPU_LOW,
     shell:
-        "minimap2 -x asm20 --cs --eqx -t {threads}"
+        "minimap2 -a -x asm20 --cs --eqx -t {threads}"
         " -R {params.readgroup} {input.ref} {input.assm}"
             " | "
         " samtools view -u -h --output-unselected {output.exclude} "
