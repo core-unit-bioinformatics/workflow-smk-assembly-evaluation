@@ -16,7 +16,7 @@ rule minimap_assembly_to_reference_align_paf:
     shell:
         "minimap2 -c -x asm20 --cs --eqx -t {threads} {input.ref} {input.assm}"
             " | "
-        "pigz -p > {output.paf}"
+        "pigz -p {threads} > {output.paf}"
 
 
 rule minimap_assembly_to_reference_align_bam:
