@@ -10,3 +10,5 @@ include: "00-prepare/sample_table.smk"
 
 include: "10-asm-align/pyutils.smk"
 include: "10-asm-align/align.smk"
+
+include: "50-postprocess/asm_align.smk"
