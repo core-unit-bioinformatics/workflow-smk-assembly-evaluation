@@ -17,7 +17,7 @@ rule ncbi_fcs_adaptor_screening:
             "40-contamination", "ncbi_fcs", "adaptor",
             "{sample}.asm-{asm_type}.log")
     resources:
-        mem_mb = lambda wildcards, attempt: 4096 * attempt
+        mem_mb = lambda wildcards, attempt: 2048 * attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
         taxonomy = NCBI_FCS_ADAPTOR_TAXONOMY
@@ -33,7 +33,7 @@ rule ncbi_fcs_adaptor_screening:
 rule ncbi_fcs_gx_contamination_screening:
     input:
         sif = NCBI_FCS_GX_SIF,
-        db = NCBI_FCS_GX_DB,
+        db = NCBI_FCS_GX_DB_PATH,
         py_script = NCBI_FCS_GX_SCRIPT,
         fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", wildcards.asm_type, None)],
     output:
@@ -54,10 +54,11 @@ rule ncbi_fcs_gx_contamination_screening:
         time_hrs = lambda wildcards, attempt: 47 * attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
-        tax_id = NCBI_FCS_GX_TAX_ID
+        tax_id = NCBI_FCS_GX_TAX_ID,
+        db_name = NCBI_FCS_GX_DB_NAME
     shell:
-        "python3 fcs.py screen genome --fasta {input.fasta} "
-        "--out-dir {params.out_dir} --gx-db {input.db} "
+        "python3 {input.py_script} screen genome --fasta {input.fasta} "
+        "--out-dir {params.out_dir} --gx-db {input.db}/{params.db_name} "
         "--tax-id {params.tax_id} &> {log}"
             " && "
         "touch {output.check}"
