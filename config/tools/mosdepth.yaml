@@ -1,0 +1,7 @@
+
+run_mosdepth: True
+
+run_mosdepth_assm_ref_cov: True
+
+mosdepth:
+  assm_ref_cov_window_size: 10000

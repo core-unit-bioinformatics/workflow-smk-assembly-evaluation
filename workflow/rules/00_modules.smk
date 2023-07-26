@@ -11,5 +11,7 @@ include: "00-prepare/sample_table.smk"
 include: "10-asm-align/pyutils.smk"
 include: "10-asm-align/align.smk"
 
+include: "40-contamination/ncbi_fcs.smk"
+
 include: "50-postprocess/asm_align_ctgchrom.smk"
 include: "50-postprocess/asm_align_refcov.smk"
