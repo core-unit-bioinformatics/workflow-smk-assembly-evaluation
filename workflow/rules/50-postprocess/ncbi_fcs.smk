@@ -8,7 +8,7 @@ rule normalize_merge_ncbi_fcs_adaptor_report:
         fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", wildcards.asm_type, None)],
     output:
         report = DIR_RES.joinpath(
-            "contamination", "{sample}.asm-{asm_type}.fcs-report-adaptor.tsv"
+            "contamination", "{sample}.asm-{asm_type}.fcs-report-adaptor.norm.tsv"
         ),
         stats = DIR_RES.joinpath(
             "contamination", "{sample}.asm-{asm_type}.fcs-report-adaptor.stats.tsv"
