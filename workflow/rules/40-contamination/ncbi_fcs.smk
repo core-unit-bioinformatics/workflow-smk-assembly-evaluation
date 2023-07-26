@@ -57,9 +57,10 @@ rule ncbi_fcs_gx_contamination_screening:
         tax_id = NCBI_FCS_GX_TAX_ID,
         db_name = NCBI_FCS_GX_DB_NAME
     shell:
+        "export FCS_DEFAULT_IMAGE={input.sif} ; "
         "python3 {input.py_script} screen genome --fasta {input.fasta} "
         "--out-dir {params.out_dir} --gx-db {input.db}/{params.db_name} "
-        "--image {input.sif} --tax-id {params.tax_id} &> {log}"
+        "--tax-id {params.tax_id} &> {log}"
             " && "
         "touch {output.check}"
 
