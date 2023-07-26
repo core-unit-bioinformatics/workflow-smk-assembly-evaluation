@@ -15,3 +15,4 @@ include: "40-contamination/ncbi_fcs.smk"
 
 include: "50-postprocess/asm_align_ctgchrom.smk"
 include: "50-postprocess/asm_align_refcov.smk"
+include: "50-postprocess/ncbi_fcs.smk"
