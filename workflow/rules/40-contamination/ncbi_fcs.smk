@@ -51,7 +51,7 @@ rule ncbi_fcs_gx_contamination_screening:
     conda: DIR_ENVS.joinpath("biotools", "ncbi_fcs.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: int((384 + 192 * attempt) * 1024),
-        time_hrs = lambda wildcards, attempt: 47 * attempt
+        time_hrs = lambda wildcards, attempt: attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
         tax_id = NCBI_FCS_GX_TAX_ID,
