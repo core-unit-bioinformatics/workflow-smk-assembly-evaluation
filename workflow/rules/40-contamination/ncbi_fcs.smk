@@ -59,7 +59,7 @@ rule ncbi_fcs_gx_contamination_screening:
     shell:
         "python3 {input.py_script} screen genome --fasta {input.fasta} "
         "--out-dir {params.out_dir} --gx-db {input.db}/{params.db_name} "
-        "--tax-id {params.tax_id} &> {log}"
+        "--image {input.sif} --tax-id {params.tax_id} &> {log}"
             " && "
         "touch {output.check}"
 
