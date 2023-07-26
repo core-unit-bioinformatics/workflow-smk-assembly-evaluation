@@ -20,7 +20,7 @@ rule normalize_merge_ncbi_fcs_adaptor_report:
     params:
         rep_file = lambda wildcards, input: pathlib.Path(
             input.check).with_suffix(".wd").joinpath("fcs_adaptor_report.txt"),
-        script = find_script("normalize_merge_report.py")
+        script = find_script("normalize_merge_report")
     shell:
         "{params.script} --adaptor --report {params.rep_file} "
             "--fasta {input.fasta} --table {output.report} "
@@ -61,7 +61,8 @@ rule normalize_merge_ncbi_fcs_contamination_report:
         mem_mb = lambda wildcards, attempt: 1024 * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
-        rep_file = lambda wildcards, input: load_contam_report_file(input.check)
+        rep_file = lambda wildcards, input: load_contam_report_file(input.check),
+        script = find_script("normalize_merge_report")
     shell:
         "{params.script} --contamination --report {params.rep_file} "
             "--fasta {input.fasta} --table {output.report} "
