@@ -116,6 +116,9 @@ def read_adaptor_report(file_path):
             columns=final_sort_order
         )
     else:
+        # this seems to be an uninformative, fixed
+        # component of the identified contaminants
+        df["adaptor_name"] = df["adaptor_name"].str.replace("CONTAMINATION_SOURCE_TYPE_", "")
         df["adaptor_name"] = '"' + df["adaptor_name"] + '"'
         norm_actions = df.apply(parse_action_range, axis=1)
         df.drop(["action", "action_range"], axis=1, inplace=True)
@@ -124,8 +127,8 @@ def read_adaptor_report(file_path):
             norm_actions, index=df.index,
             columns=["action", "action_start", "action_end"]
         )
-
-        df = df.merge(norm_actions, left_on="name", right_on="name", how="outer")
+        # default: join index-on-index
+        df = df.join(norm_actions)
     df = df[final_sort_order]
     return df
 
