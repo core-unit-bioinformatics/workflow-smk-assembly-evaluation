@@ -50,6 +50,7 @@ def parse_command_line():
         "--out-table",
         "-t", "-ot",
         dest="table",
+        default=pl.Path(".").joinpath("report.norm.tsv"),
         type=lambda x: pl.Path(x).resolve(),
         help="Path to normalized report in TSV format."
     )
@@ -58,6 +59,7 @@ def parse_command_line():
         "--out-stats",
         "-s", "-os",
         dest="statistics",
+        default=pl.Path(".").joinpath("report.stats.tsv"),
         type=lambda x: pl.Path(x).resolve(),
         help="Path to statistics summary in TSV format."
     )
