@@ -105,7 +105,7 @@ def collect_sample_infos(sample_sheet):
 
 
 def check_data_identifier(identifier):
-    if re.match("[a-z0-9]+$", identifier) is None:
+    if re.match("[A-Za-z0-9]+$", identifier) is None:
         raise ValueError(f"Invalid data identifier: {identifier}")
     return
 
