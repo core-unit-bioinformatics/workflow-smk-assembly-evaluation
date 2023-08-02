@@ -88,6 +88,19 @@ def collect_sample_infos(sample_sheet):
                 else:
                     sample_infos[sample][all_key].add(pathid)
 
+                if group_type == "asm":
+                    names_key = group_type, "all", "names"
+                    if names_key not in sample_infos[sample]:
+                        sample_infos[sample][names_key] = [group_id]
+                    else:
+                        sample_infos[sample][names_key].append(group_id)
+
+                    files_key = group_type, "all", "files"
+                    if files_key not in sample_infos[sample]:
+                        sample_infos[sample][files_key] = [seqfile]
+                    else:
+                        sample_infos[sample][files_key].append(seqfile)
+
     return sample_infos
 
 

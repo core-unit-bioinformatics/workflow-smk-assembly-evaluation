@@ -8,6 +8,8 @@ to "commons/00_commons.smk"
 include: "00-prepare/settings.smk"
 include: "00-prepare/sample_table.smk"
 
+include: "05-preprocess/merge_tag.smk"
+
 include: "10-asm-align/pyutils.smk"
 include: "10-asm-align/align.smk"
 
