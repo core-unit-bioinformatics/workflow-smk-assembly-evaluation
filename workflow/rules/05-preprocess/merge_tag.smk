@@ -1,4 +1,5 @@
 
+localrules: create_sequence_tags_file
 rule create_sequence_tags_file:
     input:
         asm_seq = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "files")]
@@ -45,7 +46,8 @@ rule merge_and_tag_asm_units:
         mem_mb = lambda wildcards, attempt: 2048 * attempt,
         time_hrs = lambda wildcards, attempt: attempt * attempt
     params:
-        script = find_script("fasta_tag_merge")
+        script = find_script("fasta_tag_merge"),
+        buffer = int(5e6)
     shell:
         "{params.script} --input {input.asm_seq} --seq-tags {input.tags} "
-            "--report --output {output.mrg_fasta} 2> "
+            "--report --buffer-size {params.buffer} --output {output.mrg_fasta} 2> {log}"
