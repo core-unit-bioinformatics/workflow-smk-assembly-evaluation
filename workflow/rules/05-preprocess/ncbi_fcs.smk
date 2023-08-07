@@ -35,7 +35,7 @@ rule ncbi_fcs_gx_contamination_screening:
         sif = NCBI_FCS_GX_SIF,
         db = NCBI_FCS_GX_DB_PATH,
         py_script = NCBI_FCS_GX_SCRIPT,
-        fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", wildcards.asm_type, None)],
+        fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
         check = DIR_PROC.joinpath(
             "05-preprocess", "ncbi_fcs",
