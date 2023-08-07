@@ -27,6 +27,15 @@ rule create_sequence_tags_file:
 
 
 rule merge_and_tag_asm_units:
+    """The merge and tag code path
+    largely exists to realize the
+    NCBI FCS screening in a more
+    efficient manner. Combining
+    all assembly units and screening
+    them all in a single run implies
+    that the 400 GB database only
+    has to be loaded once per assembly.
+    """
     input:
         asm_seq = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "files")],
         tags = DIR_PROC.joinpath(
@@ -47,7 +56,15 @@ rule merge_and_tag_asm_units:
         time_hrs = lambda wildcards, attempt: attempt * attempt
     params:
         script = find_script("fasta_tag_merge"),
-        buffer = int(5e6)
+        buffer = int(5e8)
     shell:
         "{params.script} --input {input.asm_seq} --seq-tags {input.tags} "
             "--report --buffer-size {params.buffer} --output {output.mrg_fasta} 2> {log}"
+
+
+rule run_merge_tag_all_assemblies:
+    input:
+        mrg_fasta = expand(
+            rules.merge_and_tag_asm_units.output.mrg_fasta,
+            sample=SAMPLES
+        )
