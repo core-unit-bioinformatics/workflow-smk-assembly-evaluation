@@ -17,7 +17,8 @@ rule ncbi_fcs_adaptor_screening:
             "05-preprocess", "ncbi_fcs",
             "{sample}.adaptor.log")
     resources:
-        mem_mb = lambda wildcards, attempt: 2048 * attempt
+        mem_mb = lambda wildcards, attempt: 8192 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
         taxonomy = NCBI_FCS_ADAPTOR_TAXONOMY
@@ -51,7 +52,7 @@ rule ncbi_fcs_gx_contamination_screening:
     conda: DIR_ENVS.joinpath("biotools", "ncbi_fcs.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: int((384 + 192 * attempt) * 1024),
-        time_hrs = lambda wildcards, attempt: attempt
+        time_hrs = lambda wildcards, attempt: 23 * attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
         tax_id = NCBI_FCS_GX_TAX_ID,
