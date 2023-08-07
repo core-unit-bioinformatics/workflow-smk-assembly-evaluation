@@ -58,7 +58,7 @@ def collect_sample_infos(sample_sheet):
             sample_sex = "any"
         sample_infos[sample]["sex"] = sample_sex
         for column in sheet_columns:
-            if pd.isnull(getattr(row, column)):
+            if pandas.isnull(getattr(row, column)):
                 continue
             elif column.startswith("asm_") or column.startswith("reads_"):
                 group_type, group_id = column.split("_", 1)
