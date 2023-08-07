@@ -3,19 +3,19 @@ rule ncbi_fcs_adaptor_screening:
     input:
         sif = NCBI_FCS_ADAPTOR_SIF,
         sh_script = NCBI_FCS_ADAPTOR_SCRIPT,
-        fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", wildcards.asm_type, None)],
+        fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
         check = DIR_PROC.joinpath(
-            "40-contamination", "ncbi_fcs", "adaptor",
-            "{sample}.asm-{asm_type}.ok")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.adaptor.ok")
     benchmark:
         DIR_RSRC.joinpath(
-            "40-contamination", "ncbi_fcs", "adaptor",
-            "{sample}.asm-{asm_type}.rsrc")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.adaptor.rsrc")
     log:
         DIR_LOG.joinpath(
-            "40-contamination", "ncbi_fcs", "adaptor",
-            "{sample}.asm-{asm_type}.log")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.adaptor.log")
     resources:
         mem_mb = lambda wildcards, attempt: 2048 * attempt
     params:
@@ -38,16 +38,16 @@ rule ncbi_fcs_gx_contamination_screening:
         fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", wildcards.asm_type, None)],
     output:
         check = DIR_PROC.joinpath(
-            "40-contamination", "ncbi_fcs", "gx_contam",
-            "{sample}.asm-{asm_type}.ok")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.gx-contam.ok")
     benchmark:
         DIR_RSRC.joinpath(
-            "40-contamination", "ncbi_fcs", "gx_contam",
-            "{sample}.asm-{asm_type}.rsrc")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.gx-contam.rsrc")
     log:
         DIR_LOG.joinpath(
-            "40-contamination", "ncbi_fcs", "gx_contam",
-            "{sample}.asm-{asm_type}.log")
+            "05-preprocess", "ncbi_fcs",
+            "{sample}.gx_contam.log")
     conda: DIR_ENVS.joinpath("biotools", "ncbi_fcs.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: int((384 + 192 * attempt) * 1024),
@@ -71,7 +71,6 @@ rule run_assembly_ncbi_fcs_adaptor_screening:
         check = expand(
             rules.ncbi_fcs_adaptor_screening.output.check,
             sample=SAMPLES,
-            asm_type=["disconnected"]
         )
 
 
@@ -81,5 +80,4 @@ rule run_assembly_ncbi_fcs_gx_contamination_screening:
         check = expand(
             rules.ncbi_fcs_gx_contamination_screening.output.check,
             sample=SAMPLES,
-            asm_type=["disconnected"]
         )
