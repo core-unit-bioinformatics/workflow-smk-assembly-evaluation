@@ -42,10 +42,10 @@ rule ncbi_fcs_gx_contamination_screening:
         report = expand(
             DIR_PROC.joinpath(
                 "05-preprocess", "ncbi_fcs", "{sample}.gx-contam.wd",
-                "{sample}.asm-mrg-tag.{tax_id}.fcs_gx_report.txt",
+                "{sample}.asm-mrg-tag.{tax_id}.fcs_gx_report.txt"),
                 tax_id=NCBI_FCS_GX_TAX_ID,
                 allow_missing=True
-        ))
+        )
     benchmark:
         expand(
             DIR_RSRC.joinpath(
