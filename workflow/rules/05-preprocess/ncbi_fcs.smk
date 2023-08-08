@@ -5,9 +5,10 @@ rule ncbi_fcs_adaptor_screening:
         sh_script = NCBI_FCS_ADAPTOR_SCRIPT,
         fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
-        check = DIR_PROC.joinpath(
+        report = DIR_PROC.joinpath(
             "05-preprocess", "ncbi_fcs",
-            "{sample}.adaptor.ok")
+            "{sample}.adaptor.wd", "fcs_adaptor_report.txt"
+        )
     benchmark:
         DIR_RSRC.joinpath(
             "05-preprocess", "ncbi_fcs",
@@ -38,17 +39,29 @@ rule ncbi_fcs_gx_contamination_screening:
         py_script = NCBI_FCS_GX_SCRIPT,
         fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
-        check = DIR_PROC.joinpath(
-            "05-preprocess", "ncbi_fcs",
-            "{sample}.gx-contam.ok")
+        report = expand(
+            DIR_PROC.joinpath(
+                "05-preprocess", "ncbi_fcs", "{sample}.gx-contam.wd",
+                "{sample}.asm-mrg-tag.{tax_id}.fcs_gx_report.txt",
+                tax_id=NCBI_FCS_GX_TAX_ID,
+                allow_missing=True
+        ))
     benchmark:
-        DIR_RSRC.joinpath(
-            "05-preprocess", "ncbi_fcs",
-            "{sample}.gx-contam.rsrc")
+        expand(
+            DIR_RSRC.joinpath(
+                "05-preprocess", "ncbi_fcs",
+                "{sample}.asm-mrg.{tax_id}.gx-contam.rsrc"),
+                tax_id=NCBI_FCS_GX_TAX_ID,
+                allow_missing=True
+        )
     log:
-        DIR_LOG.joinpath(
-            "05-preprocess", "ncbi_fcs",
-            "{sample}.gx_contam.log")
+        expand(
+            DIR_LOG.joinpath(
+                "05-preprocess", "ncbi_fcs",
+                "{sample}.asm-mrg.{tax_id}.gx-contam.rsrc"),
+                tax_id=NCBI_FCS_GX_TAX_ID,
+                allow_missing=True
+        )
     conda: DIR_ENVS.joinpath("biotools", "ncbi_fcs.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: int((384 + 192 * attempt) * 1024),
@@ -66,19 +79,59 @@ rule ncbi_fcs_gx_contamination_screening:
         "touch {output.check}"
 
 
-# TODO
-rule run_assembly_ncbi_fcs_adaptor_screening:
+rule normalize_merge_ncbi_fcs_adaptor_report:
     input:
-        check = expand(
-            rules.ncbi_fcs_adaptor_screening.output.check,
-            sample=SAMPLES,
+        report = rules.ncbi_fcs_adaptor_screening.output.report,
+        fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
+    output:
+        report = DIR_RES.joinpath(
+            "report", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.norm.tsv"
+        ),
+        stats = DIR_RES.joinpath(
+            "report", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.stats.tsv"
         )
+    conda: DIR_ENVS.joinpath("pyutils.yaml")
+    resources:
+        mem_mb = lambda wildcards, attempt: 1024 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
+    params:
+        script = find_script("normalize_merge_report")
+    shell:
+        "{params.script} --adaptor --report {input.report} "
+            "--fasta {input.fasta} --table {output.report} "
+            "--statistics {output.stats}"
 
 
-# TODO
-rule run_assembly_ncbi_fcs_gx_contamination_screening:
+rule normalize_merge_ncbi_fcs_contamination_report:
     input:
-        check = expand(
-            rules.ncbi_fcs_gx_contamination_screening.output.check,
+        report = rules.ncbi_fcs_gx_contamination_screening.output.report,
+        fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
+    output:
+        report = DIR_RES.joinpath(
+            "report", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.norm.tsv"
+        ),
+        stats = DIR_RES.joinpath(
+            "report", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.stats.tsv"
+        )
+    conda: DIR_ENVS.joinpath("pyutils.yaml")
+    resources:
+        mem_mb = lambda wildcards, attempt: 1024 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt
+    params:
+        script = find_script("normalize_merge_report")
+    shell:
+        "{params.script} --contamination --report {input.report} "
+            "--fasta {input.fasta} --table {output.report} "
+            "--statistics {output.stats}"
+
+
+rule run_all_ncbi_fcs_reports:
+    input:
+        rep_adapter = expand(
+            rules.normalize_merge_ncbi_fcs_adaptor_report.output.report,
             sample=SAMPLES,
+        ),
+        rep_gxcontam = expand(
+            rules.normalize_merge_ncbi_fcs_contamination_report.output.report,
+            sample=SAMPLES
         )
