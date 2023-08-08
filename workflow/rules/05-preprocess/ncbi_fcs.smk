@@ -85,10 +85,10 @@ rule normalize_merge_ncbi_fcs_adaptor_report:
         fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
         report = DIR_RES.joinpath(
-            "report", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.norm.tsv"
+            "reports", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.norm.tsv"
         ),
         stats = DIR_RES.joinpath(
-            "report", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.stats.tsv"
+            "reports", "contamination", "{sample}.asm-mrg.fcs-report-adaptor.stats.tsv"
         )
     conda: DIR_ENVS.joinpath("pyutils.yaml")
     resources:
@@ -108,10 +108,10 @@ rule normalize_merge_ncbi_fcs_contamination_report:
         fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
         report = DIR_RES.joinpath(
-            "report", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.norm.tsv"
+            "reports", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.norm.tsv"
         ),
         stats = DIR_RES.joinpath(
-            "report", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.stats.tsv"
+            "reports", "contamination", "{sample}.asm-mrg.fcs-report-gxcontam.stats.tsv"
         )
     conda: DIR_ENVS.joinpath("pyutils.yaml")
     resources:
