@@ -21,15 +21,13 @@ rule ncbi_fcs_adaptor_screening:
         mem_mb = lambda wildcards, attempt: 8192 * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
-        out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
+        out_dir = lambda wildcards, output: pathlib.Path(output.check).parent,
         taxonomy = NCBI_FCS_ADAPTOR_TAXONOMY
     shell:
         "mkdir -p {params.out_dir}"
             " && "
         "{input.sh_script} --fasta-input {input.fasta} --output-dir {params.out_dir} "
         "--{params.taxonomy} --container-engine singularity --image {input.sif} "
-            " && "
-        "touch {output.check}"
 
 
 rule ncbi_fcs_gx_contamination_screening:
@@ -67,7 +65,7 @@ rule ncbi_fcs_gx_contamination_screening:
         mem_mb = lambda wildcards, attempt: int((384 + 192 * attempt) * 1024),
         time_hrs = lambda wildcards, attempt: 23 * attempt
     params:
-        out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
+        out_dir = lambda wildcards, output: pathlib.Path(output.report).parent,
         tax_id = NCBI_FCS_GX_TAX_ID,
         db_name = NCBI_FCS_GX_DB_NAME
     shell:
@@ -75,8 +73,6 @@ rule ncbi_fcs_gx_contamination_screening:
         "python3 {input.py_script} screen genome --fasta {input.fasta} "
         "--out-dir {params.out_dir} --gx-db {input.db}/{params.db_name} "
         "--tax-id {params.tax_id} &> {log}"
-            " && "
-        "touch {output.check}"
 
 
 rule normalize_merge_ncbi_fcs_adaptor_report:
