@@ -37,13 +37,10 @@ rule ncbi_fcs_gx_contamination_screening:
         py_script = NCBI_FCS_GX_SCRIPT,
         fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
     output:
-        report = expand(
-            DIR_PROC.joinpath(
-                "05-preprocess", "ncbi_fcs", "{sample}.gx-contam.wd",
-                "{sample}.asm-mrg-tag.{tax_id}.fcs_gx_report.txt"),
-                tax_id=NCBI_FCS_GX_TAX_ID,
-                allow_missing=True
-        )
+        report = DIR_PROC.joinpath(
+            "05-preprocess", "ncbi_fcs", "{sample}.gx-contam.wd",
+            f"{{sample}}.asm-mrg-tag.{NCBI_FCS_GX_TAX_ID}.fcs_gx_report.txt"
+        ),
     benchmark:
         DIR_RSRC.joinpath(
             "05-preprocess", "ncbi_fcs",
