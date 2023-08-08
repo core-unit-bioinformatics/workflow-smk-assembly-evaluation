@@ -21,7 +21,7 @@ rule ncbi_fcs_adaptor_screening:
         mem_mb = lambda wildcards, attempt: 8192 * attempt,
         time_hrs = lambda wildcards, attempt: attempt
     params:
-        out_dir = lambda wildcards, output: pathlib.Path(output.check).parent,
+        out_dir = lambda wildcards, output: pathlib.Path(output.report).parent,
         taxonomy = NCBI_FCS_ADAPTOR_TAXONOMY
     shell:
         "mkdir -p {params.out_dir}"
