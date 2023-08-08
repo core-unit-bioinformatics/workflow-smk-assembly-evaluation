@@ -45,20 +45,14 @@ rule ncbi_fcs_gx_contamination_screening:
                 allow_missing=True
         )
     benchmark:
-        expand(
-            DIR_RSRC.joinpath(
-                "05-preprocess", "ncbi_fcs",
-                "{sample}.asm-mrg.{tax_id}.gx-contam.rsrc"),
-                tax_id=NCBI_FCS_GX_TAX_ID,
-                allow_missing=True
+        DIR_RSRC.joinpath(
+            "05-preprocess", "ncbi_fcs",
+            f"{{sample}}.asm-mrg.{NCBI_FCS_GX_TAX_ID}.gx-contam.rsrc"
         )
     log:
-        expand(
-            DIR_LOG.joinpath(
-                "05-preprocess", "ncbi_fcs",
-                "{sample}.asm-mrg.{tax_id}.gx-contam.rsrc"),
-                tax_id=NCBI_FCS_GX_TAX_ID,
-                allow_missing=True
+        DIR_LOG.joinpath(
+            "05-preprocess", "ncbi_fcs",
+            f"{{sample}}.asm-mrg.{NCBI_FCS_GX_TAX_ID}.gx-contam.rsrc"
         )
     conda: DIR_ENVS.joinpath("biotools", "ncbi_fcs.yaml")
     resources:
