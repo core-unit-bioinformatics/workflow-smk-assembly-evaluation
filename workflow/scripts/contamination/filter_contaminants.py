@@ -73,6 +73,15 @@ def parse_command_line():
         help="Remove sequence tags in output. Default: False"
     )
 
+    parser.add_argument(
+        "--report",
+        "-r",
+        action="store_true",
+        default=False,
+        dest="report",
+        help="If true, write a brief summary report to stderr. Default: False"
+    )
+
     args = parser.parse_args()
     return args
 
@@ -203,6 +212,7 @@ def main():
     count_records_in = 0
     count_records_out = 0
     count_contam_out = 0
+    count_trim_op = 0
 
     with ctl.ExitStack() as exs:
         if onefile is not None:
@@ -267,8 +277,19 @@ def main():
                         write_out.write(trim_header, trim_seq)
                         count_contam_out += 1
                         contam_out.write(discard_header, discard_seq)
+                        count_trim_op += 1
 
     assert count_records_out + count_contam_out >= count_records_in
+
+    if args.report:
+        summary = (
+            f"\n\n=== filter_contaminants report ===",
+            f"\nRecords read from input: {count_records_in}"
+            f"\nRecords written to output: {count_records_out}"
+            f"\nRecords separated as contaminated: {count_contam_out}"
+            f"\nRecords with trimmed sequences: {count_trim_op}\n\n"
+        )
+        sys.stderr.write(summary)
 
     return 0
 
