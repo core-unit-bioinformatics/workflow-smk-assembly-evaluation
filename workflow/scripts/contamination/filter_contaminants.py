@@ -283,7 +283,7 @@ def main():
 
     if args.report:
         summary = (
-            f"\n\n=== filter_contaminants report ===",
+            f"\n\n=== filter_contaminants report ==="
             f"\nRecords read from input: {count_records_in}"
             f"\nRecords written to output: {count_records_out}"
             f"\nRecords separated as contaminated: {count_contam_out}"
