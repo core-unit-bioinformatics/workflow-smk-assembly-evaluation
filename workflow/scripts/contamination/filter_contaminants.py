@@ -228,6 +228,7 @@ def main():
                     except KeyError:
                         splitfile = get_splitfile(args.out_pattern, seqtag)
                         write_out = exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
+                        splitfiles[seqtag] = write_out
                 count_records_out += 1
                 write_out.write(out_name, record.sequence)
             else:
@@ -249,6 +250,7 @@ def main():
                         except KeyError:
                             splitfile = get_splitfile(args.out_pattern, seqtag)
                             write_out = exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
+                            splitfiles[seqtag] = write_out
 
                     if trim_header is None:
                         # sequence was not trimmed -> exclude,
