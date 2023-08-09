@@ -127,8 +127,14 @@ def trim_contaminated_sequence(report, name, sequence, name_column):
 
 def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam_report, filter_tags):
 
-    contam_action = contam_report.loc[contam_report["name"] == name, "action"].values[0]
-    adaptor_action = adaptor_report.loc[adaptor_report["name"] == name, "action"].values[0]
+    try:
+        contam_action = contam_report.loc[contam_report["name"] == name, "action"].values[0]
+    except IndexError:
+        raise ValueError(f"Sequence not found: {name} / {seqtag} / contamination report")
+    try:
+        adaptor_action = adaptor_report.loc[adaptor_report["name"] == name, "action"].values[0]
+    except IndexError:
+        raise ValueError(f"Sequence not found: {name} / {seqtag} / adaptor report")
     # EXCLUDE flagged sequences are simply removed
     # from the main sequence output files specified
     # by the list of respective tags
