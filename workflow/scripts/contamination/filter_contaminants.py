@@ -226,7 +226,7 @@ def main():
                 write_out.write(out_name, record.sequence)
             else:
                 discard, trim_header, trim_seq, discard_header, discard_seq = process_contaminated_sequence(
-                    out_name, record.sequence,
+                    out_name, seqtag, record.sequence,
                     adaptor_report, contam_report,
                     args.filter_tags
                 )
