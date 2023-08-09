@@ -130,11 +130,12 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
     try:
         contam_action = contam_report.loc[contam_report["name"] == name, "action"].values[0]
     except IndexError:
-        raise ValueError(f"Sequence not found: {name} / {seqtag} / contamination report")
+        contam_action = contam_report.loc[contam_report["name"] == f"{name}.{seqtag}", "action"].values[0]
     try:
         adaptor_action = adaptor_report.loc[adaptor_report["name"] == name, "action"].values[0]
     except IndexError:
-        raise ValueError(f"Sequence not found: {name} / {seqtag} / adaptor report")
+        adaptor_action = adaptor_report.loc[adaptor_report["name"] == f"{name}.{seqtag}", "action"].values[0]
+
     # EXCLUDE flagged sequences are simply removed
     # from the main sequence output files specified
     # by the list of respective tags
