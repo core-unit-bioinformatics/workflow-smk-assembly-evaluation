@@ -98,18 +98,18 @@ def get_splitfile(out_pattern, seqtag):
     return splitfile
 
 
-def get_normalized_entity_name(report, name_column):
+def get_normalized_entity_name(report, name, name_column):
 
-    name = report.loc[report["name"] == name, name_column].values[0]
-    name = name.strip('"').replace(" ", ".")
-    assert " " not in name
-    return name
+    entity_name = report.loc[report["name"] == name, name_column].values[0]
+    entity_name = entity_name.strip('"').replace(" ", ".")
+    assert " " not in entity_name
+    return entity_name
 
 
-def trim_contaminated_sequence(report, name, sequence, name_column):
+def trim_contaminated_sequence(report, name, lookup_name, sequence, name_column):
 
-    trim_start, trim_end = report.loc[report["name"] == name, ["action_start", "action_end"]]
-    seq_length = report.loc[report["name"] == name, "seq_length"].values[0]
+    trim_start, trim_end = report.loc[report["name"] == lookup_name, ["action_start", "action_end"]]
+    seq_length = report.loc[report["name"] == lookup_name, "seq_length"].values[0]
     assert trim_start == 0 or trim_end == seq_length
     add_name = get_normalized_entity_name(report, name_column)
 
@@ -127,14 +127,13 @@ def trim_contaminated_sequence(report, name, sequence, name_column):
 
 def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam_report, filter_tags):
 
+    lookup_name = name
     try:
-        contam_action = contam_report.loc[contam_report["name"] == name, "action"].values[0]
+        contam_action = contam_report.loc[contam_report["name"] == lookup_name, "action"].values[0]
     except IndexError:
-        contam_action = contam_report.loc[contam_report["name"] == f"{name}.{seqtag}", "action"].values[0]
-    try:
-        adaptor_action = adaptor_report.loc[adaptor_report["name"] == name, "action"].values[0]
-    except IndexError:
-        adaptor_action = adaptor_report.loc[adaptor_report["name"] == f"{name}.{seqtag}", "action"].values[0]
+        lookup_name = f"{name}.{seqtag}"
+        contam_action = contam_report.loc[contam_report["name"] == lookup_name, "action"].values[0]
+    adaptor_action = adaptor_report.loc[adaptor_report["name"] == lookup_name, "action"].values[0]
 
     # EXCLUDE flagged sequences are simply removed
     # from the main sequence output files specified
@@ -146,11 +145,11 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
             trimmed_seq = None
             trimmed_header = None
             discard_seq = sequence
-            discard_reason = get_normalized_entity_name(contam_report, "tax_division")
+            discard_reason = get_normalized_entity_name(contam_report, lookup_name, "tax_division")
             discard_header = f"{name}|EXCLUDE|contam|{discard_reason}"
         elif contam_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, sequence, "tax_division"
+                contam_report, name, lookup_name, sequence, "tax_division"
             )
             trimmed_header = name
             discard = False
@@ -165,11 +164,11 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
             trimmed_seq = None
             trimmed_header = None
             discard_seq = sequence
-            discard_reason = get_normalized_entity_name(contam_report, "adaptor_name")
+            discard_reason = get_normalized_entity_name(contam_report, lookup_name, "adaptor_name")
             discard_header = f"{name}|EXCLUDE|contam|{discard_reason}"
         elif adaptor_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, sequence, "adaptor_name"
+                contam_report, name, lookup_name, sequence, "adaptor_name"
             )
             trimmed_header = name
             discard = False
