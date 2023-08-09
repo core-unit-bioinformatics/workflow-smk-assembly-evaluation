@@ -221,8 +221,7 @@ def main():
                         write_out = splitfiles[seqtag]
                     except KeyError:
                         splitfile = get_splitfile(args.out_pattern, seqtag)
-                        exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
-                        write_out = splitfile
+                        write_out = exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
                 count_records_out += 1
                 write_out.write(out_name, record.sequence)
             else:
@@ -243,8 +242,7 @@ def main():
                             write_out = splitfiles[seqtag]
                         except KeyError:
                             splitfile = get_splitfile(args.out_pattern, seqtag)
-                            exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
-                            write_out = splitfile
+                            write_out = exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
 
                     if trim_header is None:
                         # sequence was not trimmed -> exclude,
@@ -263,40 +261,6 @@ def main():
                         contam_out.write(discard_header, discard_seq)
 
     assert count_records_out + count_contam_out >= count_records_in
-
-
-
-
-
-
-    if args.adaptor_report:
-        norm_report = read_adaptor_report(args.report)
-        norm_report = add_sequences_to_adaptor_report(
-            norm_report, args.fasta
-        )
-        norm_report["screen"] = "ncbi-fcs-adaptor"
-    elif args.contam_report:
-        norm_report = read_contamination_report(args.report)
-        norm_report = add_sequences_to_contamination_report(
-            norm_report, args.fasta
-        )
-        norm_report["screen"] = "ncbi-fcs-gx-contam"
-    else:
-        raise RuntimeError
-    assert norm_report["name"].nunique() == norm_report.shape[0]
-    stats = compute_summary_statistics(norm_report)
-
-    args.table.parent.mkdir(exist_ok=True, parents=True)
-    norm_report.to_csv(
-        args.table, sep="\t", header=True, index=False,
-        quoting=csv.QUOTE_NONE
-    )
-
-    args.statistics.parent.mkdir(exist_ok=True, parents=True)
-    stats.to_csv(
-        args.statistics, sep="\t", header=True, index=False,
-        quoting=csv.QUOTE_NONE
-    )
 
     return 0
 
