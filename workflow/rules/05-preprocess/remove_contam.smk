@@ -12,6 +12,7 @@ rule remove_assembly_contaminants:
         asm_units = expand(
             DIR_PROC.joinpath("05-preprocess", "remove_contam", "{sample}.{asm_unit}.tmp.fa"),
             asm_unit=lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "names")],
+            allow_missing=True
         )
     log:
         DIR_LOG.joinpath("05-preprocess", "remove_contam", "{sample}.filter.log")
