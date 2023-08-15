@@ -190,7 +190,7 @@ def process_contaminated_sequence(name, seqtag, sequence, adapter_report, contam
             discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
         elif adapter_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, seqtag, lookup_name, sequence, name_column_adaptor
+                adapter_report, name, seqtag, lookup_name, sequence, name_column_adaptor
             )
             trimmed_header = name
             discard = False
