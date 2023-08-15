@@ -6,6 +6,23 @@ DATA_ROOT = pathlib.Path(DATA_ROOT).resolve(strict=True)
 
 WILDCARDS_REF_GENOMES = ["hg38", "t2tv2"]
 
+# STATISTICS PARAMETERS
+
+SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY = {
+    "default": [10000, 100000, 1000000, 10000000]
+}
+for asm_unit, thresholds in config.get("sequence_length_thresholds_assembly", dict()).items():
+    if asm_unit.startswith("setting"):
+        continue
+    elif asm_unit.startswith("contaminants"):
+        lookup_name = asm_unit
+    elif asm_unit.startswith("asm"):
+        lookup_name = asm_unit
+    else:
+        lookup_name = f"asm_{asm_unit}"
+    SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY[lookup_name] = thresholds
+ASSEMBLY_UNITS_RELEVANT_DEFAULT = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k != "default")
+
 # TOOL PARAMETERS
 
 ## mosdepth

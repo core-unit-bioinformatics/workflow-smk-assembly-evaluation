@@ -49,6 +49,8 @@ rule compress_clean_assembly_sequences:
     threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
+    params:
+        acc_res=lambda wildcards, output: register_result(output)
     shell:
         "rm -f {output.fagz}.EMPTY ; "
         "if [ -s {input.fasta} ] ; then "

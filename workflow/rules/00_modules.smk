@@ -17,3 +17,5 @@ include: "10-asm-align/align.smk"
 
 include: "50-postprocess/asm_align_ctgchrom.smk"
 include: "50-postprocess/asm_align_refcov.smk"
+
+include: "80-statistics/assemblies.smk"
