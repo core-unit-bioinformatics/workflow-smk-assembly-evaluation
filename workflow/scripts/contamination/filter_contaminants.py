@@ -115,7 +115,7 @@ def get_normalized_entity_name(report, name, name_column):
     return entity_name
 
 
-def trim_contaminated_sequence(report, name, lookup_name, sequence, name_column):
+def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name_column):
 
     trim_start, trim_end = report.loc[report["name"] == lookup_name, ["action_start", "action_end"]]
     seq_length = report.loc[report["name"] == lookup_name, "seq_length"].values[0]
@@ -129,7 +129,7 @@ def trim_contaminated_sequence(report, name, lookup_name, sequence, name_column)
         discard_seq = sequence[trim_start:]
         trimmed_seq = sequence[:trim_start]
 
-    discard_header = f"{name}|TRIM|{trim_start}-{trim_end}|{add_name}"
+    discard_header = f"{name}|{seqtag}|TRIM|{trim_start}-{trim_end}|{add_name}"
 
     return trimmed_seq, discard_header, discard_seq
 
@@ -155,10 +155,10 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
             trimmed_header = None
             discard_seq = sequence
             discard_reason = get_normalized_entity_name(contam_report, lookup_name, "tax_division")
-            discard_header = f"{name}|EXCLUDE|contam|{discard_reason}"
+            discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
         elif contam_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, lookup_name, sequence, "tax_division"
+                contam_report, name, seqtag, lookup_name, sequence, "tax_division"
             )
             trimmed_header = name
             discard = False
@@ -174,10 +174,10 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
             trimmed_header = None
             discard_seq = sequence
             discard_reason = get_normalized_entity_name(contam_report, lookup_name, "adaptor_name")
-            discard_header = f"{name}|EXCLUDE|contam|{discard_reason}"
+            discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
         elif adaptor_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, lookup_name, sequence, "adaptor_name"
+                contam_report, name, seqtag, lookup_name, sequence, "adaptor_name"
             )
             trimmed_header = name
             discard = False
@@ -214,6 +214,11 @@ def main():
     count_contam_out = 0
     count_trim_op = 0
 
+    total_read_seq = 0
+    total_written_seq = 0
+    total_discard_seq = 0
+    total_trimmed_seq = 0
+
     with ctl.ExitStack() as exs:
         if onefile is not None:
             onefile = exs.enter_context(dnaio.open(onefile, mode="w", fileformat="fasta"))
@@ -224,7 +229,12 @@ def main():
 
         for record in input_fasta:
             count_records_in += 1
-            stripped_name, seqtag = record.name.rsplit(".", 1)
+            total_read_seq += len(record.sequence)
+            try:
+                stripped_name, seqtag = record.name.rsplit(".", 1)
+            except ValueError:
+                seqtag = "untagged"
+                stripped_name = record.name
             if args.strip_tags:
                 out_name = stripped_name
             else:
@@ -239,8 +249,9 @@ def main():
                         splitfile = get_splitfile(args.out_pattern, seqtag)
                         write_out = exs.enter_context(dnaio.open(splitfile, mode="w", fileformat="fasta"))
                         splitfiles[seqtag] = write_out
-                count_records_out += 1
                 write_out.write(out_name, record.sequence)
+                count_records_out += 1
+                total_written_seq += len(record.sequence)
             else:
                 discard, trim_header, trim_seq, discard_header, discard_seq = process_contaminated_sequence(
                     out_name, seqtag, record.sequence,
@@ -249,8 +260,9 @@ def main():
                 )
                 if discard:
                     # write discard_seq entry to contaminants file
-                    count_contam_out += 1
                     contam_out.write(discard_header, discard_seq)
+                    count_contam_out += 1
+                    total_discard_seq += len(discard_seq)
                 else:
                     if onefile is not None:
                         write_out = onefile
@@ -263,31 +275,39 @@ def main():
                             splitfiles[seqtag] = write_out
 
                     if trim_header is None:
-                        # sequence was not trimmed -> exclude,
-                        # but is kept based on sequence tag,
-                        # so write original entry to normal output
-                        count_records_out += 1
+                        # sequence was not trimmed but excluded;
+                        # however, it is dumped to the regular
+                        # output file because its sequence tag
+                        # is not among those to be filtered.
                         write_out.write(out_name, record.sequence)
+                        count_records_out += 1
+                        total_written_seq += len(record.sequence)
                     else:
                         assert discard_header is not None
                         # sequence was trimmed, so write trimmed
-                        # sequence file to output, and discard seq.
+                        # sequence to output file, and discard seq.
                         # to contaminants
-                        count_records_out += 1
                         write_out.write(trim_header, trim_seq)
-                        count_contam_out += 1
+                        total_written_seq += len(trim_seq)
+                        count_records_out += 1
+
+                        # this is just the part of the sequence
+                        # that was flagged / trimmed off
                         contam_out.write(discard_header, discard_seq)
+                        total_trimmed_seq += len(discard_seq)
+                        count_contam_out += 1
                         count_trim_op += 1
 
     assert count_records_out + count_contam_out >= count_records_in
+    assert total_read_seq == total_written_seq + total_trimmed_seq + total_discard_seq
 
     if args.report:
         summary = (
             f"\n\n=== filter_contaminants report ==="
-            f"\nRecords read from input: {count_records_in}"
-            f"\nRecords written to output: {count_records_out}"
-            f"\nRecords separated as contaminated: {count_contam_out}"
-            f"\nRecords with trimmed sequences: {count_trim_op}\n\n"
+            f"\nRecords read from input: {count_records_in} / {total_read_seq} bp"
+            f"\nRecords written to output: {count_records_out} / {total_written_seq} bp"
+            f"\nRecords separated as contaminated: {count_contam_out} / {total_discard_seq} bp"
+            f"\nRecords with trimmed sequences: {count_trim_op} / {total_trimmed_seq} bp\n\n"
         )
         sys.stderr.write(summary)
 
