@@ -19,7 +19,7 @@ for asm_unit, thresholds in config.get("sequence_length_thresholds_assembly", di
     elif asm_unit.startswith("asm"):
         lookup_name = asm_unit
     else:
-        lookup_name = f"asm_{asm_unit}"
+        lookup_name = f"asm-{asm_unit}"
     SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY[lookup_name] = thresholds
 ASSEMBLY_UNITS_RELEVANT_DEFAULT = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k != "default")
 
