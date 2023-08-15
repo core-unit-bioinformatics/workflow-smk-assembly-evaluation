@@ -119,7 +119,10 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
 
     trim_start, trim_end = report.loc[report["name"] == lookup_name, ["action_start", "action_end"]].values[0]
     seq_length = report.loc[report["name"] == lookup_name, "seq_length"].values[0]
-    assert trim_start == 0 or trim_end == seq_length, f"TRIM start {trim_end} / TRIM end {trim_end} / seq. length {seq_length}"
+    # dropped this check for NA19129 unassigned-0000498.rdna
+    # some residual PacBio adapter sequence early in
+    # the sequence but not in the beginning
+    # assert trim_start == 0 or trim_end == seq_length, f"TRIM start {trim_end} / TRIM end {trim_end} / seq. length {seq_length}"
     add_name = get_normalized_entity_name(report, lookup_name, name_column)
 
     assert trim_end <= seq_length
@@ -133,6 +136,9 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
     elif trim_end == seq_length:
         discard_seq = sequence[trim_start:]
         trimmed_seq = sequence[:trim_start]
+    else:
+        discard_seq = sequence[trim_start:trim_end]
+        trimmed_seq = sequence[:trim_start] + sequence[trim_end:]
 
     assert len(discard_seq) == trim_length, f"Discard seq. {len(discard_seq)} vs trim length {trim_length}"
 
