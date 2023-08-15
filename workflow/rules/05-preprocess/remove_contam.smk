@@ -60,7 +60,7 @@ rule run_all_clean_assembly:
         asm_units = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
             sample=SAMPLES,
-            seq_type=["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]
+            asm_unit=[f"asm-{unit}" for unit in ["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]]
         ),
         contam = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
