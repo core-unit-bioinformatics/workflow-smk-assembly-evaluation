@@ -15,6 +15,8 @@ rule remove_assembly_contaminants:
         ]
     log:
         DIR_LOG.joinpath("05-preprocess", "remove_contam", "{sample}.filter.log")
+    conda:
+        DIR_ENVS.joinpath("pyseq.yaml")
     resources:
         mem_mb = lambda wildcards, attempt: 2048 * attempt
     params:
@@ -43,7 +45,7 @@ rule compress_clean_assembly_sequences:
             "assemblies", "{sample}", "{sample}.{seq_type}.fasta.gz.gzi"
         ),
     conda:
-        DIR_ENVS.joinpath("biotools.yaml")
+        DIR_ENVS.joinpath("pyseq.yaml")
     threads: CPU_LOW
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
