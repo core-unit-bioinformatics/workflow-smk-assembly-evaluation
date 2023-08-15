@@ -22,8 +22,8 @@ rule compute_assembly_sequence_statistics:
         time_hrs=lambda wildcards, attempt: attempt * attempt,
     params:
         script=find_script("seqstats"),
-        report_seq_lens=lambda wildcards: SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.get(seq_type, "default"),
-        acc_res=lambda wildcards, output: register_result(output.stats, output.summary)
+        report_seq_lens=lambda wildcards: SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.get(wildcards.seq_type, "default"),
+        acc_res=lambda wildcards, output: register_result(output)
     shell:
         "{params.script} --cores {threads} "
         "--summary-length-thresholds {params.report_seq_lens} "
