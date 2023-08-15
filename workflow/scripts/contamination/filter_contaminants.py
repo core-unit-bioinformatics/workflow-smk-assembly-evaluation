@@ -119,7 +119,7 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
 
     trim_start, trim_end = report.loc[report["name"] == lookup_name, ["action_start", "action_end"]]
     seq_length = report.loc[report["name"] == lookup_name, "seq_length"].values[0]
-    assert trim_start == 0 or trim_end == seq_length
+    assert trim_start == 0 or trim_end == seq_length, f"TRIM start {trim_end} / TRIM end {trim_end} / seq. length {seq_length}"
     add_name = get_normalized_entity_name(report, name_column)
 
     if trim_start == 0:
