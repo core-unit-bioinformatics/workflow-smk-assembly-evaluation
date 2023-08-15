@@ -122,6 +122,11 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
     assert trim_start == 0 or trim_end == seq_length, f"TRIM start {trim_end} / TRIM end {trim_end} / seq. length {seq_length}"
     add_name = get_normalized_entity_name(report, lookup_name, name_column)
 
+    assert trim_end <= seq_length
+    assert trim_start < trim_end
+
+    trim_length = trim_end - trim_start
+
     if trim_start == 0:
         discard_seq = sequence[:trim_end]
         trimmed_seq = sequence[trim_end:]
@@ -129,9 +134,11 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
         discard_seq = sequence[trim_start:]
         trimmed_seq = sequence[:trim_start]
 
+    assert len(discard_seq) == trim_length, f"Discard seq. {len(discard_seq)} vs trim length {trim_length}"
+
     discard_header = f"{name}|{seqtag}|TRIM|{trim_start}-{trim_end}|{add_name}"
 
-    return trimmed_seq, discard_header, discard_seq
+    return trimmed_seq, discard_seq, discard_header
 
 
 def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam_report, filter_tags):
