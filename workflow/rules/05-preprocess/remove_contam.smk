@@ -9,11 +9,10 @@ rule remove_assembly_contaminants:
             "05-preprocess", "remove_contam",
             "{sample}.contaminants.tmp.fa"
         ),
-        asm_units = multiext(
-            DIR_PROC.joinpath("05-preprocess", "remove_contam", "{sample}"),
-            lambda wildcards:
-                [f".asm-{unit}.tmp.fa" for unit in SAMPLE_INFOS[wildcards.sample][("asm", "all", "names")]]
-            )
+        asm_units = expand(
+            DIR_PROC.joinpath("05-preprocess", "remove_contam", "{sample}.{asm_unit}.tmp.fa"),
+            asm_unit=lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "names")],
+        )
     log:
         DIR_LOG.joinpath("05-preprocess", "remove_contam", "{sample}.filter.log")
     resources:
