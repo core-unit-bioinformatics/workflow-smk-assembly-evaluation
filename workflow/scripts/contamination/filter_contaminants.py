@@ -151,6 +151,12 @@ def process_contaminated_sequence(name, seqtag, sequence, adapter_report, contam
         contam_action = contam_report.loc[contam_report["name"] == lookup_name, "action"].values[0]
     adapter_action = adapter_report.loc[adapter_report["name"] == lookup_name, "action"].values[0]
 
+    # NB: spelling issues with adaptor vs adapter ...
+    name_column_adaptor = "adaptor_name"
+    assert name_column_adaptor in adapter_report.columns
+    name_column_contam = "tax_division"
+    assert name_column_contam in contam_report.columns
+
     # EXCLUDE flagged sequences are simply removed
     # from the main sequence output files specified
     # by the list of respective tags
@@ -161,11 +167,11 @@ def process_contaminated_sequence(name, seqtag, sequence, adapter_report, contam
             trimmed_seq = None
             trimmed_header = None
             discard_seq = sequence
-            discard_reason = get_normalized_entity_name(contam_report, lookup_name, "tax_division")
+            discard_reason = get_normalized_entity_name(contam_report, lookup_name, name_column_contam)
             discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
         elif contam_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, seqtag, lookup_name, sequence, "tax_division"
+                contam_report, name, seqtag, lookup_name, sequence, name_column_contam
             )
             trimmed_header = name
             discard = False
@@ -180,11 +186,11 @@ def process_contaminated_sequence(name, seqtag, sequence, adapter_report, contam
             trimmed_seq = None
             trimmed_header = None
             discard_seq = sequence
-            discard_reason = get_normalized_entity_name(adapter_report, lookup_name, "adapter_name")
+            discard_reason = get_normalized_entity_name(adapter_report, lookup_name, name_column_adaptor)
             discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
         elif adapter_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, seqtag, lookup_name, sequence, "adapter_name"
+                contam_report, name, seqtag, lookup_name, sequence, name_column_adaptor
             )
             trimmed_header = name
             discard = False
