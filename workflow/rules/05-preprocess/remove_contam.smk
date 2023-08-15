@@ -50,9 +50,16 @@ rule compress_clean_assembly_sequences:
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt,
     shell:
+        "rm -f {output.fagz}.EMPTY ; "
+        "if [ -s {input.fasta} ] ; then "
+        "{{ "
         "bgzip -c -l 6 -@ {threads} {input.fasta} > {output.fagz}"
             " && "
-        "samtools faidx {output.fagz}"
+        "samtools faidx {output.fagz} ; "
+        "}} else {{ "
+        "touch {output.fagz} && touch {output.fai} "
+        "&& touch {output.gzi} && touch {output.fagz}.EMPTY ; "
+        "}} fi ;"
 
 
 # TODO fails if missing assembly unit for sample
