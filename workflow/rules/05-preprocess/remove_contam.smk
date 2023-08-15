@@ -10,7 +10,7 @@ rule remove_assembly_contaminants:
             "{sample}.contaminants.tmp.fa"
         ),
         asm_units = expand(
-            DIR_PROC.joinpath("05-preprocess", "remove_contam", "{sample}.{asm_unit}.tmp.fa"),
+            DIR_PROC.joinpath("05-preprocess", "remove_contam", "{sample}.asm-{asm_unit}.tmp.fa"),
             asm_unit=lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "names")],
             allow_missing=True
         )
