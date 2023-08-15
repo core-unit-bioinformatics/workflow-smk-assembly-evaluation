@@ -88,15 +88,15 @@ def parse_command_line():
 
 def read_screening_reports(args):
 
-    adaptor = pd.read_csv(args.adapter_table, sep="\t", comment="#")
-    adaptor_pass = set(adaptor.loc[adaptor["action"] == "PASS", "name"].values)
+    adapter = pd.read_csv(args.adapter_table, sep="\t", comment="#")
+    adapter_pass = set(adapter.loc[adapter["action"] == "PASS", "name"].values)
 
     contam = pd.read_csv(args.contam_table, sep="\t", comment="#")
     contam_pass = set(contam.loc[contam["action"] == "PASS", "name"].values)
 
-    pass_sequences = contam_pass.intersection(adaptor_pass)
+    pass_sequences = contam_pass.intersection(adapter_pass)
 
-    return pass_sequences, adaptor, contam
+    return pass_sequences, adapter, contam
 
 
 def get_splitfile(out_pattern, seqtag):
@@ -141,7 +141,7 @@ def trim_contaminated_sequence(report, name, seqtag, lookup_name, sequence, name
     return trimmed_seq, discard_seq, discard_header
 
 
-def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam_report, filter_tags):
+def process_contaminated_sequence(name, seqtag, sequence, adapter_report, contam_report, filter_tags):
 
     lookup_name = name
     try:
@@ -149,14 +149,14 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
     except IndexError:
         lookup_name = f"{name}.{seqtag}"
         contam_action = contam_report.loc[contam_report["name"] == lookup_name, "action"].values[0]
-    adaptor_action = adaptor_report.loc[adaptor_report["name"] == lookup_name, "action"].values[0]
+    adapter_action = adapter_report.loc[adapter_report["name"] == lookup_name, "action"].values[0]
 
     # EXCLUDE flagged sequences are simply removed
     # from the main sequence output files specified
     # by the list of respective tags
     discard = seqtag in filter_tags
     if contam_action != "PASS":
-        # contamination report has priority over adaptor report
+        # contamination report has priority over adapter report
         if contam_action == "EXCLUDE":
             trimmed_seq = None
             trimmed_header = None
@@ -172,24 +172,24 @@ def process_contaminated_sequence(name, seqtag, sequence, adaptor_report, contam
         else:
             raise ValueError(f"Cannot process foreign contamination action: {contam_action} / {name} / {seqtag}")
 
-    elif adaptor_action != "PASS":
+    elif adapter_action != "PASS":
         # contamination has a PASS, which implies
-        # some residual adaptor sequence somewhere
-        if adaptor_action == "EXCLUDE":
-            # quite unlikely for adaptor contamination
+        # some residual adapter sequence somewhere
+        if adapter_action == "EXCLUDE":
+            # quite unlikely for adapter contamination
             trimmed_seq = None
             trimmed_header = None
             discard_seq = sequence
-            discard_reason = get_normalized_entity_name(contam_report, lookup_name, "adaptor_name")
+            discard_reason = get_normalized_entity_name(adapter_report, lookup_name, "adapter_name")
             discard_header = f"{name}|{seqtag}|EXCLUDE|contam|{discard_reason}"
-        elif adaptor_action == "TRIM":
+        elif adapter_action == "TRIM":
             trimmed_seq, discard_seq, discard_header = trim_contaminated_sequence(
-                contam_report, name, seqtag, lookup_name, sequence, "adaptor_name"
+                contam_report, name, seqtag, lookup_name, sequence, "adapter_name"
             )
             trimmed_header = name
             discard = False
         else:
-            raise ValueError(f"Cannot process adaptor contamination action: {contam_action} / {name} / {seqtag}")
+            raise ValueError(f"Cannot process adapter contamination action: {contam_action} / {name} / {seqtag}")
     else:
         raise ValueError(f"Cannot process contaminated sequence record: {name} / {seqtag}")
 
@@ -214,7 +214,7 @@ def main():
     args.out_contam.parent.mkdir(exist_ok=True, parents=True)
     contam_out = args.out_contam
 
-    pass_sequences, adaptor_report, contam_report = read_screening_reports(args)
+    pass_sequences, adapter_report, contam_report = read_screening_reports(args)
 
     count_records_in = 0
     count_records_out = 0
@@ -262,7 +262,7 @@ def main():
             else:
                 discard, trim_header, trim_seq, discard_header, discard_seq = process_contaminated_sequence(
                     out_name, seqtag, record.sequence,
-                    adaptor_report, contam_report,
+                    adapter_report, contam_report,
                     args.filter_tags
                 )
                 if discard:
