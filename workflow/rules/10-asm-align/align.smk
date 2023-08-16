@@ -70,7 +70,7 @@ rule minimap_assembly_to_reference_align_bam:
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
-            f'"@RG\\tID:{wildcards.sample}_{wildcards.asm_type}'
+            f'"@RG\\tID:{wildcards.sample}_{wildcards.seq_type}'
             f'\\tSM:{wildcards.sample}"'
         ),
         sam_flag_out = 1540,  # unmap, PCR-dup, QC-fail --- keep 2nd align!
@@ -96,11 +96,11 @@ rule run_minimap_contig_to_ref_alignments:
                 rules.minimap_assembly_to_reference_align_bam.output.bam,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
+                seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
         ),
         paf = expand(
                 rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
+                seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
         )

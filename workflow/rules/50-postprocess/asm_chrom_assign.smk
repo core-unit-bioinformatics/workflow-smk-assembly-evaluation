@@ -31,7 +31,7 @@ rule run_chromosome_assignments:
                 "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
             view=["query", "target"]
         ),
         tsv_rdna = expand(
@@ -40,7 +40,7 @@ rule run_chromosome_assignments:
                 "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
             ref=["t2tv2"],
             sample=SAMPLES,
-            asm_type=["asm-rdna"],
+            seq_type=["asm-rdna"],
             view=["query", "target"]
         )
 
