@@ -84,7 +84,7 @@ rule minimap_assembly_to_reference_align_bam:
             " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
-        " -T {wildcards.sample}_{wildcards.asm_type}_{wildcards.ref}_mm2 -o {output.bam} "
+        " -T {wildcards.sample}_{wildcards.seq_type}_{wildcards.ref}_mm2 -o {output.bam} "
             " && "
         "samtools index -@ {threads} {output.bam}"
 
