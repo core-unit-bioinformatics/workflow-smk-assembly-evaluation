@@ -47,7 +47,7 @@ rule normalize_minimap_assembly_to_reference_align_paf:
 rule minimap_assembly_to_reference_align_bam:
     input:
         ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.ref),
-        assm = assm = rules.compress_clean_assembly_sequences.output.fagz
+        assm = rules.compress_clean_assembly_sequences.output.fagz
     output:
         bam = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
