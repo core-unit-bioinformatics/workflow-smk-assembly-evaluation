@@ -6,8 +6,8 @@ rule mosdepth_assembly_reference_coverage_window:
     output:
         check = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_refcov", "mosdepth",
-            "{ref}", "{sample}.asm-{asm_type}.mq{mapq}.wd",
-            "{sample}.asm-{asm_type}.{ref}.mq{mapq}.ok"
+            "{ref}", "{sample}.{seq_type}.mq{mapq}.wd",
+            "{sample}.{seq_type}.{ref}.mq{mapq}.ok"
         )
     threads: CPU_LOW
     conda: DIR_ENVS.joinpath("biotools", "mosdepth.yaml")
@@ -35,14 +35,14 @@ rule run_assembly_reference_coverage:
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_type=["hap1", "hap2", "unassigned", "disconnected"],
+            asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
             mapq=["00", "60"]
         ),
         rdna_win = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=["t2tv2"],
             sample=SAMPLES,
-            asm_type=["rdna"],
+            asm_type=["asm-rdna"],
             mapq=["00", "60"]
         )
 

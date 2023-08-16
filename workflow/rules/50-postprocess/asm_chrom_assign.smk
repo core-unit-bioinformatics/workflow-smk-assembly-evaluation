@@ -5,11 +5,11 @@ rule estimate_chromosome_assignment:
     output:
         tsv_query = DIR_RES.joinpath(
             "reports" "ref_chrom_assign",
-            "{sample}.asm-{asm_type}.{ref}.chrom-assign-by-query.tsv"
+            "{sample}.{seq_type}.{ref}.chrom-assign-by-query.tsv"
         ),
         tsv_target = DIR_RES.joinpath(
             "reports", "ref_chrom_assign",
-            "{sample}.asm-{asm_type}.{ref}.chrom-assign-by-target.tsv"
+            "{sample}.{seq_type}.{ref}.chrom-assign-by-target.tsv"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
@@ -28,19 +28,19 @@ rule run_chromosome_assignments:
         tsv = expand(
             DIR_RES.joinpath(
                 "reports", "ref_chrom_assign",
-                "{sample}.asm-{asm_type}.{ref}.chrom-assign-by-{view}.tsv"),
+                "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_type=["hap1", "hap2", "unassigned", "disconnected"],
+            asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
             view=["query", "target"]
         ),
         tsv_rdna = expand(
             DIR_RES.joinpath(
                 "reports", "ref_chrom_assign",
-                "{sample}.asm-{asm_type}.{ref}.chrom-assign-by-{view}.tsv"),
+                "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
             ref=["t2tv2"],
             sample=SAMPLES,
-            asm_type=["rdna"],
+            asm_type=["asm-rdna"],
             view=["query", "target"]
         )
 

@@ -12,7 +12,7 @@ rule minimap_assembly_to_reference_align_paf:
     output:
         paf = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "paf", "{sample}.asm-{asm_type}.{ref}.paf.gz"
+            "paf", "{sample}.{seq_type}.{ref}.paf.gz"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -32,7 +32,7 @@ rule normalize_minimap_assembly_to_reference_align_paf:
     output:
         tsv = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "table", "{sample}.asm-{asm_type}.{ref}.norm-paf.tsv.gz"
+            "table", "{sample}.{seq_type}.{ref}.norm-paf.tsv.gz"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
@@ -51,15 +51,15 @@ rule minimap_assembly_to_reference_align_bam:
     output:
         bam = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.asm-{asm_type}.{ref}.sort.bam"
+            "bam", "{sample}.{seq_type}.{ref}.sort.bam"
         ),
         bai = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.asm-{asm_type}.{ref}.sort.bam.bai"
+            "bam", "{sample}.{seq_type}.{ref}.sort.bam.bai"
         ),
         excluded = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.asm-{asm_type}.{ref}.unmapped.bam"
+            "bam", "{sample}.{seq_type}.{ref}.unmapped.bam"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -96,11 +96,11 @@ rule run_minimap_contig_to_ref_alignments:
                 rules.minimap_assembly_to_reference_align_bam.output.bam,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                asm_type=["hap1", "hap2", "unassigned", "disconnected", "rdna"]
+                asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
         ),
         paf = expand(
                 rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                asm_type=["hap1", "hap2", "unassigned", "disconnected", "rdna"]
+                asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
         )
