@@ -27,13 +27,13 @@ rule run_chromosome_assignments:
     input:
         tsv_query = expand(
             rules.estimate_chromosome_assignment.output.tsv_query,
-            ref=WILDCARDS_REF_GENOMES,
+            ref=["t2tv2"],
             sample=SAMPLES,
             seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
         tsv_target = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
-            ref=WILDCARDS_REF_GENOMES,
+            ref=["t2tv2"],
             sample=SAMPLES,
             seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
