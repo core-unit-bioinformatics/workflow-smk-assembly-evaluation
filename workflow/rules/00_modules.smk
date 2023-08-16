@@ -15,7 +15,7 @@ include: "05-preprocess/remove_contam.smk"
 include: "10-asm-align/pyutils.smk"
 include: "10-asm-align/align.smk"
 
-include: "50-postprocess/asm_align_ctgchrom.smk"
-include: "50-postprocess/asm_align_refcov.smk"
+include: "50-postprocess/asm_chrom_assign.smk"
+include: "50-postprocess/asm_ctg_refcov.smk"
 
 include: "80-statistics/assemblies.smk"

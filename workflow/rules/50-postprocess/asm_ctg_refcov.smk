@@ -1,16 +1,12 @@
 
 rule mosdepth_assembly_reference_coverage_window:
     input:
-        bam = DIR_PROC.joinpath(
-            "10-asm-align/{ref}/{sample}.asm-{asm_type}.{ref}.sort.bam"
-        ),
-        bai = DIR_PROC.joinpath(
-            "10-asm-align/{ref}/{sample}.asm-{asm_type}.{ref}.sort.bam.bai"
-        ),
+        bam = rules.minimap_assembly_to_reference_align_bam.output.bam,
+        bai = rules.minimap_assembly_to_reference_align_bam.output.bai
     output:
         check = DIR_PROC.joinpath(
-            "50-postprocess/asm_align_refcov/mosdepth/{ref}",
-            "{sample}.asm-{asm_type}.mq{mapq}.wd",
+            "50-postprocess", "asm_ctg_refcov", "mosdepth",
+            "{ref}", "{sample}.asm-{asm_type}.mq{mapq}.wd",
             "{sample}.asm-{asm_type}.{ref}.mq{mapq}.ok"
         )
     threads: CPU_LOW
@@ -40,6 +36,13 @@ rule run_assembly_reference_coverage:
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
             asm_type=["hap1", "hap2", "unassigned", "disconnected"],
+            mapq=["00", "60"]
+        ),
+        rdna_win = expand(
+            rules.mosdepth_assembly_reference_coverage_window.output.check,
+            ref=["t2tv2"],
+            sample=SAMPLES,
+            asm_type=["rdna"],
             mapq=["00", "60"]
         )
 
