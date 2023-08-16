@@ -57,7 +57,7 @@ rule minimap_assembly_to_reference_align_bam:
             "alignments", "contig_to_ref", "{ref}",
             "bam", "{sample}.{seq_type}.{ref}.sort.bam.bai"
         ),
-        excluded = DIR_RES.joinpath(
+        unmapped = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
             "bam", "{sample}.{seq_type}.{ref}.unmapped.bam"
         )
@@ -79,7 +79,7 @@ rule minimap_assembly_to_reference_align_bam:
         "minimap2 -a -x asm20 --cs --eqx -t {threads}"
         " -R {params.readgroup} {input.ref} {input.assm}"
             " | "
-        " samtools view -u -h --output-unselected {output.exclude} "
+        " samtools view -u -h --output-unselected {output.unmapped} "
         " -F {params.sam_flag_out} --threads {params.sam_threads}"
             " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
