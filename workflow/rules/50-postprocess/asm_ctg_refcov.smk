@@ -35,14 +35,14 @@ rule run_assembly_reference_coverage:
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
             mapq=["00", "60"]
         ),
         rdna_win = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=["t2tv2"],
             sample=SAMPLES,
-            asm_type=["asm-rdna"],
+            seq_type=["asm-rdna"],
             mapq=["00", "60"]
         )
 
