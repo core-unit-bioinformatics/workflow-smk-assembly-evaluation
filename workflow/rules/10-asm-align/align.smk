@@ -52,11 +52,11 @@ rule minimap_assembly_to_reference_align_bam:
         bam = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
             "bam", "{sample}.asm-{asm_type}.{ref}.sort.bam"
-        )
+        ),
         bai = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
             "bam", "{sample}.asm-{asm_type}.{ref}.sort.bam.bai"
-        )
+        ),
         excluded = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
             "bam", "{sample}.asm-{asm_type}.{ref}.unmapped.bam"
