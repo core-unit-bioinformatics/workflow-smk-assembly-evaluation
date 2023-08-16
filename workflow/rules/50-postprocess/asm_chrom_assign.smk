@@ -4,7 +4,7 @@ rule estimate_chromosome_assignment:
         tsv = rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv
     output:
         tsv_query = DIR_RES.joinpath(
-            "reports" "ref_chrom_assign",
+            "reports", "ref_chrom_assign",
             "{sample}.{seq_type}.{ref}.chrom-assign-by-query.tsv"
         ),
         tsv_target = DIR_RES.joinpath(
