@@ -25,22 +25,28 @@ rule estimate_chromosome_assignment:
 
 rule run_chromosome_assignments:
     input:
-        tsv = expand(
-            DIR_RES.joinpath(
-                "reports", "ref_chrom_assign",
-                "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
+        tsv_query = expand(
+            rules.estimate_chromosome_assignment.output.tsv_query,
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
             seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
-            view=["query", "target"]
         ),
-        tsv_rdna = expand(
-            DIR_RES.joinpath(
-                "reports", "ref_chrom_assign",
-                "{sample}.{seq_type}.{ref}.chrom-assign-by-{view}.tsv"),
+        tsv_target = expand(
+            rules.estimate_chromosome_assignment.output.tsv_target,
+            ref=WILDCARDS_REF_GENOMES,
+            sample=SAMPLES,
+            seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+        ),
+        tsv_qry_rdna = expand(
+            rules.estimate_chromosome_assignment.output.tsv_query,
             ref=["t2tv2"],
             sample=SAMPLES,
             seq_type=["asm-rdna"],
-            view=["query", "target"]
+        ),
+        tsv_trg_rdna = expand(
+            rules.estimate_chromosome_assignment.output.tsv_target,
+            ref=["t2tv2"],
+            sample=SAMPLES,
+            seq_type=["asm-rdna"],
         )
 
