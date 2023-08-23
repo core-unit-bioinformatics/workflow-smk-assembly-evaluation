@@ -21,7 +21,8 @@ for asm_unit, thresholds in config.get("sequence_length_thresholds_assembly", di
     else:
         lookup_name = f"asm-{asm_unit}"
     SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY[lookup_name] = thresholds
-ASSEMBLY_UNITS_RELEVANT_DEFAULT = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k != "default")
+ASSEMBLY_UNITS_PLUS_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k != "default")
+ASSEMBLY_UNITS_NO_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k not in ["default", "contaminants"])
 
 # TOOL PARAMETERS
 
