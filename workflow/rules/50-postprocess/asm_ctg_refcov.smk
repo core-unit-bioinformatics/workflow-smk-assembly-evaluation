@@ -67,7 +67,7 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
             assert mapq_t.startswith("mq")
             mapq_t = int(mapq_t.strip("mq"))
             asm_unit = name_components[-6]
-            assert mapq_t.startswith("asm")
+            assert asm_unit.startswith("asm")
             regions = pd.read_csv(
                 regions_file, sep="\t", header=None,
                 names=["chrom", "start", "end", "ctg_align_cov"],
