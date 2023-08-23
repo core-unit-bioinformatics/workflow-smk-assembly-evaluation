@@ -28,6 +28,42 @@ rule mosdepth_assembly_reference_coverage_window:
         "touch {output.check}"
 
 
+rule mosdepth_merge_region_coverage_mapq_thresholds:
+    input:
+        check = expand(
+            rules.mosdepth_assembly_reference_coverage_window.output.check,
+            mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
+        )
+    output:
+        merged_regions = DIR_PROC.joinpath(
+            "50-postprocess", "asm_ctg_refcov", "mosdepth",
+            "{ref}", "{sample}.{seq_type}.{ref}.win-ctg-cov.tsv.gz"
+        )
+    run:
+        import pathlib as pl
+        import pandas as pd
+
+        merged = []
+        for check_file in input.check:
+            regions_file = pl.Path(check_file).with_suffix(".regions.bed.gz")
+            assert regions_file.is_file(), f"File not found: {regions_file}"
+            mapq_t = regions_file.name.split(".")[-4]
+            assert mapq_t.startswith("mq")
+            cov_column_name = f"coverage_{mapq_t}"
+            regions = pd.read_csv(
+                regions_file, sep="\t", header=None,
+                names=["chrom", "start", "end", cov_column_name],
+                index_col=["chrom", "start", "end"]
+            )
+            merged.append(regions)
+        if len(merged) == 1:
+            merged = merged[0]
+        else:
+            merged = pd.concat(merged, axis=1, ignore_index=False)
+
+        merged.to_csv(output.merged_regions, index=True, header=True, sep="\t")
+    # END OF RUN BLOCK
+
 
 rule run_assembly_reference_coverage:
     input:
@@ -36,13 +72,13 @@ rule run_assembly_reference_coverage:
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
             seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
-            mapq=["00", "60"]
+            mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
         ),
         rdna_win = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=["t2tv2"],
             sample=SAMPLES,
             seq_type=["asm-rdna"],
-            mapq=["00", "60"]
+            mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
         )
 

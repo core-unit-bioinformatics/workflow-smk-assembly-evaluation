@@ -37,6 +37,8 @@ RUN_MOSDEPTH_ASSM_REF_COV = RUN_MOSDEPTH and config.get("run_mosdepth_assm_ref_c
 MOSDEPTH_PARAMS = config.get("mosdepth", dict())
 MOSDEPTH_ASSM_REF_COV_WINDOW_SIZE = int(MOSDEPTH_PARAMS.get("assm_ref_cov_window_size", 10000))
 
+MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS = [f"{t:02}" for t in MOSDEPTH_PARAMS.get("assm_ref_cov_mapq_threshold", [0, 60])]
+assert isinstance(MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS, list)
 
 ## NCBI FCS toolkit
 
