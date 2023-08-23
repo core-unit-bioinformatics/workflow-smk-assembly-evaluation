@@ -28,7 +28,7 @@ rule mosdepth_assembly_reference_coverage_window:
         "touch {output.check}"
 
 
-rule mosdepth_merge_region_coverage_mapq_thresholds:
+rule mosdepth_merge_region_contig_coverage:
     input:
         check = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
@@ -37,8 +37,8 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
             allow_missing=True
         )
     output:
-        merged_regions = DIR_PROC.joinpath(
-            "50-postprocess", "asm_ctg_refcov", "mosdepth",
+        merged_regions = DIR_RES.joinpath(
+            "coverage", "contig_ref",
             "{ref}", "{sample}.{ref}.win-ctg-cov.tsv.gz"
         )
     resources:
@@ -47,17 +47,6 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
         import pathlib as pl
         import pandas as pd
 
-        def assign_coverage_label(cov_value):
-            if cov_value == 1:
-                return "one"
-            if cov_value == 0:
-                return "zero"
-            if cov_value < 1:
-                return "low"
-            if cov_value == 2:
-                return "two"
-            return "high"
-
         merged = []
         for check_file in input.check:
             regions_file = pl.Path(check_file).with_suffix(".regions.bed.gz")
@@ -65,7 +54,7 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
             name_components = regions_file.name.split(".")
             mapq_t = name_components[-4]
             assert mapq_t.startswith("mq")
-            mapq_t = int(mapq_t.strip("mq"))
+            mapq_t = mapq_t.upper()
             asm_unit = name_components[-6]
             assert asm_unit.startswith("asm")
             regions = pd.read_csv(
@@ -73,7 +62,6 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
                 names=["chrom", "start", "end", "ctg_align_cov"],
                 index_col=["chrom", "start", "end"]
             )
-            regions["label_cov"] = regions["ctg_align_cov"].apply(assign_coverage_label)
             regions.columns = pd.MultiIndex.from_tuples(
                 [(asm_unit, mapq_t, c) for c in regions.columns],
                 names=["asm_unit", "mapq", "statistic"]
@@ -103,5 +91,10 @@ rule run_assembly_reference_coverage:
             sample=SAMPLES,
             seq_type=["asm-rdna"],
             mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
+        ),
+        merged = expand(
+            rules.mosdepth_merge_region_contig_coverage.output.merged_regions,
+            ref=["t2tv2"],
+            sample=SAMPLES
         )
 
