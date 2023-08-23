@@ -73,7 +73,7 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
                 names=["chrom", "start", "end", "ctg_align_cov"],
                 index_col=["chrom", "start", "end"]
             )
-            regions[label_column_name] = regions[cov_column_name].apply(assign_coverage_label)
+            regions["label_cov"] = regions["ctg_align_cov"].apply(assign_coverage_label)
             regions.columns = pd.MultiIndex.from_tuples(
                 [(asm_unit, mapq_t, c) for c in regions.columns],
                 names=["asm_unit", "mapq", "statistic"]
