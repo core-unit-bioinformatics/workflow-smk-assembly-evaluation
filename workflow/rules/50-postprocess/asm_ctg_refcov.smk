@@ -39,7 +39,7 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
     output:
         merged_regions = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_refcov", "mosdepth",
-            "{ref}", "{sample}.{seq_type}.{ref}.win-ctg-cov.tsv.gz"
+            "{ref}", "{sample}.{ref}.win-ctg-cov.tsv.gz"
         )
     resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt
