@@ -32,7 +32,8 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
     input:
         check = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
-            mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
+            mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS,
+            allow_missing=True
         )
     output:
         merged_regions = DIR_PROC.joinpath(
