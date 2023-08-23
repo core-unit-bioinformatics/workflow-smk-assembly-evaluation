@@ -33,6 +33,7 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
         check = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS,
+            seq_type=ASSEMBLY_UNITS_RELEVANT_DEFAULT,
             allow_missing=True
         )
     output:
@@ -40,21 +41,42 @@ rule mosdepth_merge_region_coverage_mapq_thresholds:
             "50-postprocess", "asm_ctg_refcov", "mosdepth",
             "{ref}", "{sample}.{seq_type}.{ref}.win-ctg-cov.tsv.gz"
         )
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
     run:
         import pathlib as pl
         import pandas as pd
+
+        def assign_coverage_label(cov_value):
+            if cov_value == 1:
+                return "one"
+            if cov_value == 0:
+                return "zero"
+            if cov_value < 1:
+                return "low"
+            if cov_value == 2:
+                return "two"
+            return "high"
 
         merged = []
         for check_file in input.check:
             regions_file = pl.Path(check_file).with_suffix(".regions.bed.gz")
             assert regions_file.is_file(), f"File not found: {regions_file}"
-            mapq_t = regions_file.name.split(".")[-4]
+            name_components = regions_file.name.split(".")
+            mapq_t = name_components[-4]
             assert mapq_t.startswith("mq")
-            cov_column_name = f"coverage_{mapq_t}"
+            mapq_t = int(mapq_t.strip("mq"))
+            asm_unit = name_components[-6]
+            assert mapq_t.startswith("asm")
             regions = pd.read_csv(
                 regions_file, sep="\t", header=None,
-                names=["chrom", "start", "end", cov_column_name],
+                names=["chrom", "start", "end", "ctg_align_cov"],
                 index_col=["chrom", "start", "end"]
+            )
+            regions[label_column_name] = regions[cov_column_name].apply(assign_coverage_label)
+            regions.columns = pd.MultiIndex.from_tuples(
+                [(asm_unit, mapq_t, c) for c in regions.columns],
+                names=["asm_unit", "mapq", "statistic"]
             )
             merged.append(regions)
         if len(merged) == 1:
