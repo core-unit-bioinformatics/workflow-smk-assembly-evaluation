@@ -40,7 +40,7 @@ rule align_reads_to_complete_assembly:
         sam_threads = CPU_LOW,
         preset = lambda wildcards: f"map-{wildcards.read_type}"
     shell:
-        "minimap2 -a -x {params.preset} --MD --cs --eqx -t {threads}"
+        "minimap2 -a -x {params.preset} --MD --cs --eqx -t {threads} "
         "-R {params.readgroup} {input.assembly} {input.reads}"
             " | "
         "samtools view -u -h --output-unselected {output.excluded_bam} "
