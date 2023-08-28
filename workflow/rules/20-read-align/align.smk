@@ -30,7 +30,7 @@ rule align_reads_to_complete_assembly:
     resources:
         mem_mb = lambda wildcards, attempt: 65536 + 32768 * attempt,
         time_hrs = lambda wildcards, attempt: 11 * attempt,
-        sort_mem_mb = 4096 * attempt
+        sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
     params:
         readgroup = lambda wildcards: (
             f'"@RG\\tID:{wildcards.sample}_{wildcards.read_type}'
