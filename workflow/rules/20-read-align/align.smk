@@ -28,8 +28,14 @@ rule align_reads_to_complete_assembly:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
     threads: CPU_HIGH
     resources:
-        mem_mb = lambda wildcards, attempt: 65536 + 32768 * attempt,
-        time_hrs = lambda wildcards, attempt: 11 * attempt,
+        mem_mb = lambda wildcards, attempt: {
+            "hifi": 65536 + 8192 * attempt,
+            "ont": 65536 + 16384 * attempt
+        }[wildcards.read_type],
+        time_hrs = lambda wildcards, attempt: {
+            "hifi": attempt * attempt,
+            "ont": 6 * attempt
+        }[wildcards.read_type],
         sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
     params:
         readgroup = lambda wildcards: (
