@@ -44,8 +44,11 @@ rule align_reads_to_complete_assembly:
         ),
         sam_flag_out = 1540,  # unmap, PCR-dup, QC-fail --- keep 2nd align!
         sam_threads = CPU_LOW,
-        preset = lambda wildcards: f"map-{wildcards.read_type}"
+        preset = lambda wildcards: f"map-{wildcards.read_type}",
+        temp_prefix = lambda wildcards: f"temp/20-read-align/{wildcards.path_id}"
     shell:
+        "mkdir -p {params.temp_prefix}"
+            " && "
         "minimap2 -a -x {params.preset} --MD --cs --eqx -t {threads} "
         "-R {params.readgroup} {input.assembly} {input.reads}"
             " | "
@@ -54,10 +57,12 @@ rule align_reads_to_complete_assembly:
             " | "
         "samtools sort -l 9 -m {resources.sort_mem_mb}M "
         "--threads {params.sam_threads} "
-        "-T {wildcards.sample}_{wildcards.read_type}_{wildcards.path_id}_mm2 "
+        "-T {params.temp_prefix}/{wildcards.sample}_{wildcards.read_type}_{wildcards.path_id}_mm2 "
         "-o {output.mapped_bam} "
             " && "
         "samtools index -@ {threads} {output.mapped_bam}"
+            " ; "
+        "rm -rfd {params.temp_prefix}"
 
 
 # dummy rule / trigger only

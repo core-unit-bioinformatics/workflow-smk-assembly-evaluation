@@ -30,15 +30,23 @@ ASSEMBLY_UNITS_NO_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY
 
 ### mosdepth global on/off switch
 RUN_MOSDEPTH = config.get("run_mosdepth", False)
+MOSDEPTH_PARAMS = config.get("mosdepth", dict())
 
 ### window size for assembly-to-reference
 ### alignments; to evaluate assembly contig
 ### coverage in reference genome
 RUN_MOSDEPTH_ASSM_REF_COV = RUN_MOSDEPTH and config.get("run_mosdepth_assm_ref_cov", False)
-MOSDEPTH_PARAMS = config.get("mosdepth", dict())
 MOSDEPTH_ASSM_REF_COV_WINDOW_SIZE = int(MOSDEPTH_PARAMS.get("assm_ref_cov_window_size", 10000))
 
 MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS = [f"{t:02}" for t in MOSDEPTH_PARAMS.get("assm_ref_cov_mapq_threshold", [0, 60])]
+assert isinstance(MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS, list)
+
+### similar to contig-to-reference coverage,
+### here read to assembly coverage
+RUN_MOSDEPTH_ASSM_READ_COV = RUN_MOSDEPTH and config.get("run_mosdepth_assm_read_cov", False)
+MOSDEPTH_ASSM_READ_COV_WINDOW_SIZE = int(MOSDEPTH_PARAMS.get("assm_read_cov_window_size", 1000))
+
+MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS = [f"{t:02}" for t in MOSDEPTH_PARAMS.get("assm_read_cov_mapq_threshold", [0, 60])]
 assert isinstance(MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS, list)
 
 ## NCBI FCS toolkit
