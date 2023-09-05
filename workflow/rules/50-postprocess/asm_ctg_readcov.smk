@@ -35,7 +35,7 @@ rule run_all_mosdepth_assembly_read_coverage:
     input:
         check_files = expand(
             rules.mosdepth_assembly_read_coverage_window.output.check,
-            samples=SAMPLES,
+            sample=SAMPLES,
             read_type=["hifi", "ont"],
             aln_subset=["onlyPRI", "onlySPL"],
             mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS
