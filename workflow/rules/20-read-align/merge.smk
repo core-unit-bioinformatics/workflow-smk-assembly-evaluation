@@ -31,4 +31,4 @@ rule merge_read_to_assembly_subset_alignments:
     shell:
         "samtools merge -r -f --threads {threads} -o {output.bam} {input.bams}"
             " && "
-        "samtools index --threads {threads} {output.bam}"
+        "samtools index -@ {threads} {output.bam}"
