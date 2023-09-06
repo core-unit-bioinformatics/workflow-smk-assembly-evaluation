@@ -38,7 +38,7 @@ rule filter_read_alignments_to_subset:
     shell:
         "mkdir -p {params.temp_prefix}"
             " && "
-        "samtools view --threads {threads} -u {params.select_flag} "
+        "samtools view --threads {threads} -u {params.select_flag} {input.bam} "
             " | "
         "samtools sort -l 9 -m {resources.sort_mem_mb}M --threads {threads} "
         "-T {params.temp_prefix}/{wildcards.sample}_{wildcards.read_type}_{wildcards.aln_subset}_mm2 "
