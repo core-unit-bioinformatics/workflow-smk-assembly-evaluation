@@ -44,7 +44,7 @@ rule filter_read_alignments_to_subset:
         "-T {params.temp_prefix}/{wildcards.sample}_{wildcards.read_type}_{wildcards.aln_subset}_mm2 "
         "-o {output.bam}"
             " && "
-        "samtools index --threads {threads} {output.bam}"
+        "samtools index -@ {threads} {output.bam}"
             " ; "
         "rm -rfd {params.temp_prefix}"
 
