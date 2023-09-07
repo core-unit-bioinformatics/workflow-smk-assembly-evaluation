@@ -19,13 +19,13 @@ rule mosdepth_assembly_read_coverage_window:
         mem_mb = lambda wildcards, attempt: 8192 * attempt,
         time_hrs = lambda wildcards, attempt: max(0, attempt-1)
     params:
-        window_size = MOSDEPTH_ASSM_REF_COV_WINDOW_SIZE,
+        window_size = MOSDEPTH_ASSM_READ_COV_WINDOW_SIZE,
         min_mapq = lambda wildcards: int(wildcards.mapq),
         out_prefix = lambda wildcards, output: pathlib.Path(output.check).with_suffix("")
     shell:
         "mosdepth --threads {threads} --by {params.window_size} "
             "--no-per-base --flag 0 --use-median "
-            "--quantize 5:8:12:15:20:25:30: --fast-mode --mapq {params.min_mapq} "
+            "--quantize 0:5:8:12:15:20:25:30:50:100: --fast-mode --mapq {params.min_mapq} "
             "{params.out_prefix} {input.bam}"
             " && "
         "touch {output.check}"

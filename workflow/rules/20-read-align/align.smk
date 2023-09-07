@@ -34,7 +34,7 @@ rule align_reads_to_complete_assembly:
         }[wildcards.read_type],
         time_hrs = lambda wildcards, attempt: {
             "hifi": attempt * attempt,
-            "ont": 11 * attempt
+            "ont": 47 * attempt
         }[wildcards.read_type],
         sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
     params:
