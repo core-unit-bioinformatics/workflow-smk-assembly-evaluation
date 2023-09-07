@@ -30,11 +30,11 @@ rule align_reads_to_complete_assembly:
     resources:
         mem_mb = lambda wildcards, attempt: {
             "hifi": 65536 + 8192 * attempt,
-            "ont": 65536 + 16384 * attempt
+            "ont": 65536 + 49152 * attempt
         }[wildcards.read_type],
         time_hrs = lambda wildcards, attempt: {
             "hifi": attempt * attempt,
-            "ont": 23 * attempt
+            "ont": 11 * attempt
         }[wildcards.read_type],
         sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
     params:

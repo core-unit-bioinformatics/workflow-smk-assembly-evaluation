@@ -18,11 +18,20 @@ rule filter_read_alignments_to_subset:
             "20-read-align", "10_filter_per_file", "{sample}.{read_type}",
             "{sample}.{read_type}.{path_id}.{aln_subset}.sort.bam.bai"
         ),
+    benchmark:
+        DIR_RSRC.joinpath(
+            "20-read-align", "10_filter_per_file", "{sample}.{read_type}",
+            "{sample}.{read_type}.{path_id}.{aln_subset}.samtools.rsrc"
+        )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
     threads: CPU_LOW
     resources:
-        mem_mb = lambda wildcards, attempt: 12288 + 12288 * attempt,
+        mem_mb = lambda wildcards, attempt: {
+            "onlySPL": 12288 + 12288 * attempt,
+            "onlySEC": 12288 + 12288 * attempt,
+            "onlyPRI": 24576 + 24576 * attempt
+        }[wildcards.aln_subset],
         time_hrs = lambda wildcards, attempt: attempt * attempt,
         sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
     params:
