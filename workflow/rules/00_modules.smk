@@ -24,4 +24,6 @@ include: "50-postprocess/asm_chrom_assign.smk"
 include: "50-postprocess/asm_ctg_refcov.smk"
 include: "50-postprocess/asm_ctg_readcov.smk"
 
+include: "60-flagging/nucfreq.smk"
+
 include: "80-statistics/assemblies.smk"
