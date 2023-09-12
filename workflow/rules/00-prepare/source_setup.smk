@@ -12,7 +12,7 @@ rule clone_nucfreqtwo_repo:
     envmodules:
         "git"
     params:
-        repo_url = "git@git.hhu.de:ebertp/NucFreqTwo.git",
+        repo_url = "https://git.hhu.de/ebertp/NucFreqTwo.git",
         branch_name = "split-two-phases"
     shell:
         "mkdir -p sources && cd sources && "
