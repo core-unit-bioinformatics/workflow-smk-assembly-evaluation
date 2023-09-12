@@ -15,7 +15,7 @@ rule clone_nucfreqtwo_repo:
         repo_url = "git@git.hhu.de:ebertp/NucFreqTwo.git",
         branch_name = "split-two-phases"
     shell:
-        "mkdir -p sources && cd source && "
+        "mkdir -p sources && cd sources && "
         "git clone {params.repo_url} && "
         "cd NucFreqTwo && "
         "git switch {params.branch_name}"
