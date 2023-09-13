@@ -17,18 +17,22 @@ rule define_clean_assembly_regions:
         import pandas as pd
         import pathlib as pl
 
-        tag_map = dict()
+        tags = []
         with open(input.asm_tags, "r") as asm_tags:
             for line in asm_tags:
                 if not line.strip():
                     continue
                 filename, tag = line.strip().split()
-                tag_map[filename + ".fai"] = tag
+                tags.append(tag)
+        assert len(tags) == len(set(tags))
 
         regions = []
         for fai_file in input.fai_files:
             fai_name = pl.Path(fai_file).name
-            fai_tag = tag_map[fai_name]
+            fai_tag = [tag for tag in tags if tag in fai_name]
+            if len(fai_tag) != 1:
+                raise ValueError(f"Cannot tag FASTA index file: {fai_name}")
+            fai_tag = fai_tag[0]
             fai_regions = pd.read_csv(
                 fai_file, sep="\t", header=None,
                 names=["contig", "end"], usecols=[0, 1]
