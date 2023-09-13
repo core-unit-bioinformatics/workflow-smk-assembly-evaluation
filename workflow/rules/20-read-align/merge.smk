@@ -20,6 +20,11 @@ rule merge_read_to_assembly_subset_alignments:
             "20-read-align", "20_merge_subsets", "{sample}.{read_type}",
             "{sample}.{read_type}.{aln_subset}.sort.bam.bai"
         ),
+    benchmark:
+        DIR_RSRC.joinpath(
+            "20-read-align", "20_merge_subsets", "{sample}.{read_type}",
+            "{sample}.{read_type}.{aln_subset}.samtools.rsrc"
+        )
     wildcard_constraints:
         aln_subset = "(" + "|".join(["onlyPRI", "onlySPL", "onlySEC"]) + ")"
     conda:
