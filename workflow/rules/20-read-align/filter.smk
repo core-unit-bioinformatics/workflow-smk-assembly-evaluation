@@ -44,7 +44,7 @@ rule define_clean_assembly_regions:
         regions = pd.concat(regions, axis=0, ignore_index=False)
         regions.sort_values(["contig", "start"], inplace=True)
 
-        with open(output.bed) as dump:
+        with open(output.bed, "w") as dump:
             _ = dump.write("#")
             regions[["contig", "start", "end"]].to_csv(
                 dump, sep="\t", header=True, index=False
