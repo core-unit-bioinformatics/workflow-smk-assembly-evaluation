@@ -59,7 +59,7 @@ rule mosdepth_coverage_stats_summary:
         import pathlib as pl
         import pandas as pd
         import numpy as np
-        import scipy.stats as stats
+        #import scipy.stats as stats  # Not in default snakemake env
         _this = "50-postprocess::asm_ctg_readcov::summarize_mosdepth_coverage"
 
         summary_file = pl.Path(input.check_file).with_suffix(".mosdepth.summary.txt")
@@ -75,9 +75,11 @@ rule mosdepth_coverage_stats_summary:
         wt_var = np.average((df["mean"].values - wt_avg)**2, weights=df["length"].values)
         wt_stddev = np.sqrt(wt_var)
 
-        threshold_score = stats.scoreatpercentile(
-            df["mean"].values, params.threshold_percentile
-        )
+        factor = round(params.threshold_percentile / 100, 3)
+        assert factor < 1
+        threshold_index = int(df["mean"].values.size * factor)
+        threshold_score = np.sort(df["mean"].values)[threshold_index]
+
         assert np.isclose(reported_total_mean, wt_avg, atol=0.5), \
             f"Averages do not match: {reported_total_mean} vs {wt_avg}"
 
