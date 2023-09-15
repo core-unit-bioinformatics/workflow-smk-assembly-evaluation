@@ -165,7 +165,7 @@ rule transform_mosdepth_window_read_coverage:
                 index_col=["contig", "start", "end"]
             )
             global_cov = global_covs[read_type]
-            new_regions["log2_median_cov"] = np.log2(df["median_cov"].values / global_cov + 1)
+            new_regions["log2_median_cov"] = np.log2(new_regions["median_cov"].values / global_cov + 1)
             col_idx = pd.MultiIndex.from_tuples(
                 [
                     (read_type, aln_type, mapq, "median_cov"),
@@ -182,7 +182,7 @@ rule transform_mosdepth_window_read_coverage:
         with pd.HDFStore(output.hdf, "w", complevel=9, complib="blosc") as hdf:
             contig_lut = []
             contig_num = 0
-            for contig, windows in df.groupby("contig"):
+            for contig, windows in regions.groupby("contig"):
                 assert isinstance(contig, str)
                 if contig not in clean_contigs:
                     continue
