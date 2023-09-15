@@ -100,12 +100,69 @@ rule mosdepth_coverage_stats_summary:
     # END OF RUN BLOCK
 
 
+rule transform_mosdepth_window_read_coverage:
+    input:
+        stats = rules.mosdepth_coverage_stats_summary.output.stats,
+        check_file = rules.mosdepth_assembly_read_coverage_window.output.check
+    output:
+        hdf = DIR_PROC.joinpath(
+            "50-postprocess", "asm_ctg_readcov", "mosdepth",
+            "{sample}.{read_type}.{aln_subset}.mq{mapq}.cov-trans.h5"
+        )
+    resources:
+        mem_mb=lambda wildcards, attempt: 4096 * attempt,
+        time_hrs=lambda wildcards, attempt: max(0, attempt - 1)
+
+    run:
+        import pathlib as pl
+        import pandas as pd
+        import numpy as np
+
+        stats = pd.read_csv(input.stats, sep="\t", header=0)
+        global_mean_cov = round(stats.loc[wildcards.sample, "global_mean_cov"], 0)
+
+        columns = ["contig", "start", "end", "median_cov"]
+        region_file = pl.Path(input.check_file[0]).with_suffix(".regions.bed.gz")
+        df = pd.read_csv(region_file, sep="\t", header=None, names=columns)
+        df["log2_median_cov"] = np.log2(df["median_cov"].values / global_mean_cov + 1)
+
+        store_columns = ["start", "end", "median_cov", "log2_median_cov"]
+        with pd.HDFStore(output.hdf, "w", complevel=9, complib="blosc") as hdf:
+            contig_lut = []
+            contig_num = 0
+            for contig, regions in df.groupby("contig"):
+                contig_num += 1
+                untagged_contig, asm_unit_tag = contig.rsplit(".", 1)
+                store_key = f"{asm_unit_tag}/contig{contig_num}"
+                hdf.put(store_key, regions[store_columns], format="fixed")
+                contig_lut.append(
+                    (contig, untagged_contig, asm_unit_tag, store_key, contig_num)
+                )
+
+            contig_lut = pd.DataFrame.from_records(
+                contig_lut, columns=[
+                    "contig", "untagged_contig", "asm_unit",
+                    "store_key", "contig_num"
+                ]
+            )
+            hdf.put("contigs", contig_lut, format="fixed")
+            hdf.put("covstats", stats, format="fixed")
+    # END OF RUN BLOCK
+
+
 # TODO: need wildcard comb function for
 # sample and read type
 rule run_all_mosdepth_assembly_read_coverage:
     input:
         check_files = expand(
             rules.mosdepth_assembly_read_coverage_window.output.check,
+            sample=SAMPLES,
+            read_type=["hifi", "ont"],
+            aln_subset=["onlyPRI", "onlySPL"],
+            mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS
+        ),
+        transform_cov = expand(
+            rules.transform_mosdepth_window_read_coverage.output.hdf,
             sample=SAMPLES,
             read_type=["hifi", "ont"],
             aln_subset=["onlyPRI", "onlySPL"],
