@@ -31,8 +31,8 @@ rule merge_read_to_assembly_subset_alignments:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
     threads: CPU_LOW
     resources:
-        mem_mb = lambda wildcards, attempt: 8192 * attempt,
-        time_hrs = lambda wildcards, attempt: attempt ** 3,
+        mem_mb = lambda wildcards, attempt: 1024 * attempt,
+        time_hrs = lambda wildcards, attempt: attempt,
     shell:
         "samtools merge -r -f --threads {threads} -o {output.bam} {input.bams}"
             " && "

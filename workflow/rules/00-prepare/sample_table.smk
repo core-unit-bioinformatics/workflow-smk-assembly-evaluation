@@ -103,6 +103,13 @@ def collect_sample_infos(sample_sheet):
                     else:
                         sample_infos[sample][files_key].append(seqfile)
 
+                if group_type == "reads":
+                    names_key = "reads", "all", "types"
+                    if names_key not in sample_infos[sample]:
+                        sample_infos[sample][names_key] = [group_id]
+                    else:
+                        sample_infos[sample][names_key].append(group_id)
+
     return sample_infos
 
 
