@@ -148,7 +148,7 @@ rule transform_mosdepth_window_read_coverage:
         for stats_file in input.stats_files:
             stats = pd.read_csv(stats_file, sep="\t", header=0)
             read_type = pl.Path(stats_file).name.rsplit(".", 3)[-3]
-            global_mean_cov = round(stats.loc[wildcards.sample, "global_mean_cov"], 0)
+            global_mean_cov = round(stats["global_mean_cov"].values[0], 0)
             global_covs[read_type] = int(global_mean_cov)
             all_stats.append(stats)
         all_stats = pd.concat(all_stats, axis=0, ignore_index=False)
