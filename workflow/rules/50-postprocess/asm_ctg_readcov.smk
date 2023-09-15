@@ -145,7 +145,7 @@ rule transform_mosdepth_window_read_coverage:
 
         global_covs = dict()
         all_stats = []
-        for stats_file in input.stats_files:
+        for stats_file in sorted(set(input.stats_files)):
             stats = pd.read_csv(stats_file, sep="\t", header=0)
             read_type = pl.Path(stats_file).name.rsplit(".", 3)[-3]
             global_mean_cov = round(stats["global_mean_cov"].values[0], 0)
@@ -155,7 +155,7 @@ rule transform_mosdepth_window_read_coverage:
 
         columns = ["contig", "start", "end", "median_cov"]
         regions = None
-        for check_file in input.check_files:
+        for check_file in sorted(set(input.check_files)):
             region_file = pl.Path(check_file).with_suffix(".regions.bed.gz")
             _, read_type, aln_subset, mapq, _ = pl.Path(check_file).name.rsplit(".", 4)
             aln_type = aln_subsets[aln_subset]
