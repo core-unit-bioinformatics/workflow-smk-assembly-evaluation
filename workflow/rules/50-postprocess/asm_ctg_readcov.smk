@@ -62,7 +62,8 @@ rule mosdepth_coverage_stats_summary:
         #import scipy.stats as stats  # Not in default snakemake env
         _this = "50-postprocess::asm_ctg_readcov::summarize_mosdepth_coverage"
 
-        summary_file = pl.Path(input.check_file).with_suffix(".mosdepth.summary.txt")
+        assert len(input.check_file) == 1  # expand() returns a NamedList
+        summary_file = pl.Path(input.check_file[0]).with_suffix(".mosdepth.summary.txt")
         if not summary_file.is_file():
             logerr(f"\nERROR in {_this} - file does not exist {summary_file}\n")
             raise FileNotFoundError(summary_file.name)
