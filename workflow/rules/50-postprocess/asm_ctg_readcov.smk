@@ -125,7 +125,7 @@ rule transform_mosdepth_window_read_coverage:
     output:
         hdf = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_readcov", "mosdepth",
-            "{sample}.{read_type}.{aln_subset}.mq{mapq}.cov-trans.h5"
+            "{sample}.read-cov.h5"
         )
     resources:
         mem_mb=lambda wildcards, attempt: 4096 * attempt,
@@ -218,10 +218,7 @@ rule run_all_mosdepth_assembly_read_coverage:
         ),
         transform_cov = expand(
             rules.transform_mosdepth_window_read_coverage.output.hdf,
-            sample=SAMPLES,
-            read_type=["hifi", "ont"],
-            aln_subset=["onlyPRI", "onlySPL"],
-            mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS
+            sample=SAMPLES
         )
 
 
