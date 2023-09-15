@@ -47,7 +47,8 @@ rule mosdepth_coverage_stats_summary:
             aln_subset=["onlyPRI"],
             mapq=["00"],
             allow_missing=True
-        )
+        ),
+        clean_regions = rules.define_clean_assembly_regions.output.bed
     output:
         stats = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_readcov", "mosdepth",
@@ -62,6 +63,12 @@ rule mosdepth_coverage_stats_summary:
         #import scipy.stats as stats  # Not in default snakemake env
         _this = "50-postprocess::asm_ctg_readcov::summarize_mosdepth_coverage"
 
+        clean_contigs = pd.read_csv(
+            input.clean_regions, sep="\t",
+            comment="#", usecols=[0], header=None
+        )
+        clean_contigs = set(clean_contigs[0])
+
         assert len(input.check_file) == 1  # expand() returns a NamedList
         summary_file = pl.Path(input.check_file[0]).with_suffix(".mosdepth.summary.txt")
         if not summary_file.is_file():
@@ -70,7 +77,7 @@ rule mosdepth_coverage_stats_summary:
         df = pd.read_csv(summary_file, sep="\t", header=0)
         df = df.loc[~df["chrom"].str.endswith("region"), :].copy()
         reported_total_mean = df.loc[df["chrom"] == "total", "mean"].values[0]
-        df = df.loc[~df["chrom"].str.contains("total"), :].copy()
+        df = df.loc[df["chrom"].isin(clean_contigs), :].copy()  # NB: gets rid of "total" entry
 
         wt_avg = np.average(df["mean"].values, weights=df["length"].values)
         wt_var = np.average((df["mean"].values - wt_avg)**2, weights=df["length"].values)
@@ -102,8 +109,19 @@ rule mosdepth_coverage_stats_summary:
 
 rule transform_mosdepth_window_read_coverage:
     input:
-        stats = rules.mosdepth_coverage_stats_summary.output.stats,
-        check_file = rules.mosdepth_assembly_read_coverage_window.output.check
+        stats_files = lambda wildcards: expand(
+            rules.mosdepth_coverage_stats_summary.output.stats,
+            read_type=SAMPLE_INFOS[wildcards.sample][("reads", "all", "types")],
+            allow_missing=True
+        ),
+        check_files = lambda wildcards: expand(
+            rules.mosdepth_assembly_read_coverage_window.output.check,
+            read_type=SAMPLE_INFOS[wildcards.sample][("reads", "all", "types")],
+            aln_subset=["onlySPL", "onlyPRI"],
+            mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS,
+            allow_missing=True
+        ),
+        clean_regions = rules.define_clean_assembly_regions.output.bed
     output:
         hdf = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_readcov", "mosdepth",
@@ -112,29 +130,66 @@ rule transform_mosdepth_window_read_coverage:
     resources:
         mem_mb=lambda wildcards, attempt: 4096 * attempt,
         time_hrs=lambda wildcards, attempt: max(0, attempt - 1)
-
     run:
         import pathlib as pl
         import pandas as pd
         import numpy as np
 
-        stats = pd.read_csv(input.stats, sep="\t", header=0)
-        global_mean_cov = round(stats.loc[wildcards.sample, "global_mean_cov"], 0)
+        clean_contigs = pd.read_csv(
+            input.clean_regions, sep="\t",
+            comment="#", usecols=[0], header=None
+        )
+        clean_contigs = set(clean_contigs[0])
+
+        aln_subsets = {"onlyPRI": 1, "onlySPL": 0, "onlySEC": 2}
+
+        global_covs = dict()
+        all_stats = []
+        for stats_file in input.stats_files:
+            stats = pd.read_csv(stats_file, sep="\t", header=0)
+            read_type = pl.Path(stats_file).name.rsplit(".", 3)[-3]
+            global_mean_cov = round(stats.loc[wildcards.sample, "global_mean_cov"], 0)
+            global_covs[read_type] = int(global_mean_cov)
+            all_stats.append(stats)
+        all_stats = pd.concat(all_stats, axis=0, ignore_index=False)
 
         columns = ["contig", "start", "end", "median_cov"]
-        region_file = pl.Path(input.check_file[0]).with_suffix(".regions.bed.gz")
-        df = pd.read_csv(region_file, sep="\t", header=None, names=columns)
-        df["log2_median_cov"] = np.log2(df["median_cov"].values / global_mean_cov + 1)
+        regions = None
+        for check_file in input.check_files:
+            region_file = pl.Path(check_file).with_suffix(".regions.bed.gz")
+            _, read_type, aln_subset, mapq, _ = pl.Path(check_file).name.rsplit(".", 4)
+            aln_type = aln_subsets[aln_subset]
+            mapq = int(mapq.strip("mq"))
+            new_regions = pd.read_csv(
+                region_file, sep="\t", header=None, names=columns,
+                index_col=["contig", "start", "end"]
+            )
+            global_cov = global_covs[read_type]
+            new_regions["log2_median_cov"] = np.log2(df["median_cov"].values / global_cov + 1)
+            col_idx = pd.MultiIndex.from_tuples(
+                [
+                    (read_type, aln_type, mapq, "median_cov"),
+                    (read_type, aln_type, mapq, "log2_median_cov")
+                ],
+                names=["read_type", "aln_type", "mapq", "value"]
+            )
+            new_regions.columns = col_idx
+            if regions is None:
+                regions = new_regions.copy()
+            else:
+                regions = regions.join(new_regions, how="outer")
 
-        store_columns = ["start", "end", "median_cov", "log2_median_cov"]
         with pd.HDFStore(output.hdf, "w", complevel=9, complib="blosc") as hdf:
             contig_lut = []
             contig_num = 0
-            for contig, regions in df.groupby("contig"):
+            for contig, windows in df.groupby("contig"):
+                assert isinstance(contig, str)
+                if contig not in clean_contigs:
+                    continue
                 contig_num += 1
                 untagged_contig, asm_unit_tag = contig.rsplit(".", 1)
                 store_key = f"{asm_unit_tag}/contig{contig_num}"
-                hdf.put(store_key, regions[store_columns], format="fixed")
+                hdf.put(store_key, windows, format="fixed")
                 contig_lut.append(
                     (contig, untagged_contig, asm_unit_tag, store_key, contig_num)
                 )
@@ -146,7 +201,7 @@ rule transform_mosdepth_window_read_coverage:
                 ]
             )
             hdf.put("contigs", contig_lut, format="fixed")
-            hdf.put("covstats", stats, format="fixed")
+            hdf.put("covstats", all_stats, format="fixed")
     # END OF RUN BLOCK
 
 
