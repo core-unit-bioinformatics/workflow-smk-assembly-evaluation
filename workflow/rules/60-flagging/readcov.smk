@@ -29,7 +29,7 @@ rule prepare_window_read_coverage_histogram:
             if edge_idx == bins.size - 1:
                 label = "LRG"
             else:
-                label = f"{bin_edge}:03"
+                label = f"{bin_edge:03}"
             bin_labels.append(label)
 
         # TODO move to settings module
