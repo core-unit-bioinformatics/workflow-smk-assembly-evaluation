@@ -21,6 +21,10 @@ sequence_length_thresholds_assembly:
   rdna: *setting2
   contaminants: *setting2
 
+groups_window_read_coverage:
+  - hap
+  - unassigned
+  - disconnected
 # Config options to use reference container
 # as part of the pipeline
 use_reference_container: false

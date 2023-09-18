@@ -165,11 +165,11 @@ rule transform_mosdepth_window_read_coverage:
                 index_col=["contig", "start", "end"]
             )
             global_cov = global_covs[read_type]
-            new_regions["log2_median_cov"] = np.log2(new_regions["median_cov"].values / global_cov + 1)
+            new_regions["pct_median_cov"] = (new_regions["median_cov"].values / global_cov * 100).round(1)
             col_idx = pd.MultiIndex.from_tuples(
                 [
                     (read_type, aln_type, mapq, "median_cov"),
-                    (read_type, aln_type, mapq, "log2_median_cov")
+                    (read_type, aln_type, mapq, "pct_median_cov")
                 ],
                 names=["read_type", "aln_type", "mapq", "value"]
             )
