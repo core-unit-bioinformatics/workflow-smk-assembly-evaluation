@@ -10,9 +10,9 @@ rule prepare_window_read_coverage_histogram:
     resources:
         mem_mb=lambda wildcards, attempt: 2048 * attempt
     params:
-        low_bin=-1,
-        high_bin=301,
-        step_size=1,
+        low_bin=-5,
+        high_bin=305,
+        step_size=5,
         mapq=0,
         signal="pct_median_cov"
     run:
