@@ -26,10 +26,11 @@ rule prepare_window_read_coverage_histogram:
 
         bin_labels = []
         for edge_idx, bin_edge in enumerate(bins[1:], start=1):
-            if edge_idx == bins.size - 2:
+            if edge_idx == bins.size - 1:
                 label = "LRG"
             else:
                 label = f"{bin_edge}:03"
+            bin_labels.append(label)
 
         # TODO move to settings module
         cov_groups = config["groups_window_read_coverage"]
@@ -59,7 +60,7 @@ rule prepare_window_read_coverage_histogram:
                         include_lowest=False, right=True,
                         labels=bin_labels
                     ).value_counts()
-                    store_key = (sample, read_type, aln_type, mapq, use_group)
+                    store_key = (wildcards.sample, read_type, aln_type, mapq, use_group)
                     if store_key not in group_counts:
                         tmp = pd.Series(
                             np.zeros(bins.size-1, dtype=int),
