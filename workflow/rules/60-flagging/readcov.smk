@@ -26,7 +26,7 @@ rule prepare_window_read_coverage_histogram:
 
         bin_labels = []
         for edge_idx, bin_edge in enumerate(bins[1:], start=1):
-            if edge_idx == bins.size - 1:
+            if edge_idx == bins.size - 2:
                 label = "LRG"
             else:
                 label = f"{bin_edge}:03"
