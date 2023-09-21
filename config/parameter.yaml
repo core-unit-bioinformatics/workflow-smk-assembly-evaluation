@@ -21,6 +21,12 @@ sequence_length_thresholds_assembly:
   rdna: *setting2
   contaminants: *setting2
 
+# controls rules in
+# 50-postprocess::asm_ctg_readcov.smk
+# 60-flagging::readcov.smk
+use_read_types_window_coverage:
+  - hifi
+  - ont
 groups_window_read_coverage:
   - hap
   - unassigned

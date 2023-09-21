@@ -111,12 +111,12 @@ rule transform_mosdepth_window_read_coverage:
     input:
         stats_files = lambda wildcards: expand(
             rules.mosdepth_coverage_stats_summary.output.stats,
-            read_type=SAMPLE_INFOS[wildcards.sample][("reads", "all", "types")],
+            read_type=USE_READ_TYPES_WINDOW_COVERAGE,
             allow_missing=True
         ),
         check_files = lambda wildcards: expand(
             rules.mosdepth_assembly_read_coverage_window.output.check,
-            read_type=SAMPLE_INFOS[wildcards.sample][("reads", "all", "types")],
+            read_type=USE_READ_TYPES_WINDOW_COVERAGE,
             aln_subset=["onlySPL", "onlyPRI"],
             mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS,
             allow_missing=True
@@ -212,7 +212,7 @@ rule run_all_mosdepth_assembly_read_coverage:
         check_files = expand(
             rules.mosdepth_assembly_read_coverage_window.output.check,
             sample=SAMPLES,
-            read_type=["hifi", "ont"],
+            read_type=USE_READ_TYPES_WINDOW_COVERAGE,
             aln_subset=["onlyPRI", "onlySPL"],
             mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS
         ),
@@ -227,5 +227,5 @@ rule run_all_mosdepth_coverage_stats:
         stats = expand(
             rules.mosdepth_coverage_stats_summary.output.stats,
             sample=SAMPLES,
-            read_type=["hifi", "ont"]
+            read_type=USE_READ_TYPES_WINDOW_COVERAGE
         )

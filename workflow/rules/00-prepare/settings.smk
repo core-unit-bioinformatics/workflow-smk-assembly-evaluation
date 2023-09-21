@@ -49,6 +49,15 @@ MOSDEPTH_ASSM_READ_COV_WINDOW_SIZE = int(MOSDEPTH_PARAMS.get("assm_read_cov_wind
 MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS = [f"{t:02}" for t in MOSDEPTH_PARAMS.get("assm_read_cov_mapq_threshold", [0, 60])]
 assert isinstance(MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS, list)
 
+### parameters to summarize read coverage in windows
+
+USE_READ_TYPES_WINDOW_COVERAGE = config.get("use_read_types_window_coverage", [])
+GROUPS_WINDOW_READ_COVERAGE = config.get("groups_window_read_coverage", [])
+
+if RUN_MOSDEPTH_ASSM_READ_COV:
+    assert len(USE_READ_TYPES_WINDOW_COVERAGE) > 0
+    assert len(GROUPS_WINDOW_READ_COVERAGE) > 0
+
 ## NCBI FCS toolkit
 
 RUN_NCBI_FCS_ADAPTOR = config.get("run_ncbi_fcs_adaptor", False)
