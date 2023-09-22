@@ -110,7 +110,7 @@ rule extract_issue_windows_readcov_empty:
                 if not empty_regions.empty:
                     empty_regions["name"] = "no_read_support"
                     empty_regions.set_index([empty_regions.index, "name"], inplace=True)
-                    empty_regions.append(dump_regions)
+                    dump_regions.append(empty_regions)
 
         dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
         dump_regions.sort_index(inplace=True)
@@ -184,7 +184,7 @@ rule extract_issue_windows_readcov_onetype:
                 if not single_regions.empty:
                     single_regions["name"] = f"only_{wildcards.read_type}_support"
                     single_regions.set_index([single_regions.index, "name"], inplace=True)
-                    single_regions.append(dump_regions)
+                    dump_regions.append(single_regions)
 
         dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
         dump_regions.sort_index(inplace=True)
