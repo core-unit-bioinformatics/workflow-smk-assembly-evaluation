@@ -197,8 +197,6 @@ rule extract_issue_windows_readcov_onetype:
     # END OF RUN BLOCK
 
 
-
-
 rule run_all_window_read_coverage_histograms:
     input:
         tsv = expand(
@@ -206,3 +204,15 @@ rule run_all_window_read_coverage_histograms:
             sample=SAMPLES
         )
 
+
+rule run_all_extract_window_readcov_issue_regions:
+    input:
+        empty = expand(
+            rules.extract_issue_windows_readcov_empty.output.bed,
+            sample=SAMPLES
+        ),
+        single = expand(
+            rules.extract_issue_windows_readcov_onetype.output.bed,
+            read_type=USE_READ_TYPES_WINDOW_COVERAGE,
+            sample=SAMPLES
+        )
