@@ -80,9 +80,11 @@ rule extract_issue_windows_readcov_empty:
         hdf = rules.transform_mosdepth_window_read_coverage.output.hdf
     output:
         bed = DIR_RES.joinpath(
-            "regions", "issues", "read_cov",
+            "regions", "{sample}",
             "{sample}.no-read-support.bed.gz"
         )
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
     params:
         low_cov_all = 1
     run:
@@ -132,9 +134,11 @@ rule extract_issue_windows_readcov_onetype:
         hdf = rules.transform_mosdepth_window_read_coverage.output.hdf
     output:
         bed = DIR_RES.joinpath(
-            "regions", "issues", "read_cov",
+            "regions", "{sample}",
             "{sample}.only-{read_type}-support.bed.gz"
         )
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
     params:
         min_cov_pct_reads = 10,
         max_cov_pct_other = 1
@@ -170,11 +174,11 @@ rule extract_issue_windows_readcov_onetype:
                 # indexer: region has READ coverage
                 region_indexer[supported_regions] = True
 
-                for read_type in read_types:
-                    if read_type == wildcards.read_type:
+                for other_read_type in read_types:
+                    if other_read_type == wildcards.read_type:
                         continue
                     dropout_regions = ((cov_data.xs(
-                        (wildcards.read_type, "pct_median_cov"),
+                        (other_read_type, "pct_median_cov"),
                         level=["read_type", "value"],
                         axis=1
                     )) < params.max_cov_pct_other).all(axis=1).values
