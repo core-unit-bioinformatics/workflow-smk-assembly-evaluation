@@ -112,13 +112,17 @@ rule extract_issue_windows_readcov_empty:
                     empty_regions.set_index([empty_regions.index, "name"], inplace=True)
                     dump_regions.append(empty_regions)
 
-        dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
-        dump_regions.sort_index(inplace=True)
-        dump_regions.columns = flatten_window_readcov_columns(dump_regions.columns.names, dump_regions.columns)
-        dump_regions.reset_index(drop=False, inplace=True)
-        with gz.open(output.bed, "wt") as bed:
-            _ = bed.write("#")
-            dump_regions.to_csv(bed, sep="\t", header=True, index=False)
+        if len(dump_regions) > 0:
+            dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
+            dump_regions.sort_index(inplace=True)
+            dump_regions.columns = flatten_window_readcov_columns(dump_regions.columns.names, dump_regions.columns)
+            dump_regions.reset_index(drop=False, inplace=True)
+            with gz.open(output.bed, "wt") as bed:
+                _ = bed.write("#")
+                dump_regions.to_csv(bed, sep="\t", header=True, index=False)
+        else:
+            with gz.open(output.bed, "wt") as bed:
+                _ = bed.write("#contig\tstart\tend\tname\n")
 
     # END OF RUN BLOCK
 
@@ -186,13 +190,17 @@ rule extract_issue_windows_readcov_onetype:
                     single_regions.set_index([single_regions.index, "name"], inplace=True)
                     dump_regions.append(single_regions)
 
-        dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
-        dump_regions.sort_index(inplace=True)
-        dump_regions.columns = flatten_window_readcov_columns(dump_regions.columns.names, dump_regions.columns)
-        dump_regions.reset_index(drop=False, inplace=True)
-        with gz.open(output.bed, "wt") as bed:
-            _ = bed.write("#")
-            dump_regions.to_csv(bed, sep="\t", header=True, index=False)
+        if len(dump_regions) > 0:
+            dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
+            dump_regions.sort_index(inplace=True)
+            dump_regions.columns = flatten_window_readcov_columns(dump_regions.columns.names, dump_regions.columns)
+            dump_regions.reset_index(drop=False, inplace=True)
+            with gz.open(output.bed, "wt") as bed:
+                _ = bed.write("#")
+                dump_regions.to_csv(bed, sep="\t", header=True, index=False)
+        else:
+            with gz.open(output.bed, "wt") as bed:
+                _ = bed.write("#contig\tstart\tend\tname\n")
 
     # END OF RUN BLOCK
 
