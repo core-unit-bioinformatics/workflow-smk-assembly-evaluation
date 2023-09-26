@@ -31,12 +31,59 @@ rule build_nucfreq_cache:
         "--min-region-size 500000"
 
 
-rule run_all_nucfreq_cache:
+rule dump_nucfreq_flagged_regions:
+    input:
+        hdf = rules.build_nucfreq_cache.output.hdf
+    output:
+        bed = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.nucfreq-flagged.bed.gz"
+        )
+    run:
+        import pandas as pd
+        import gzip
+
+        column_sort = [
+            "contig", "start", "end",
+            "asm_unit", "num_hets", "het_pct"
+        ]
+
+        dump_regions = []
+        with pd.HDFStore(input.hdf, "r") as hdf:
+            contig_map = hdf["/group_table"]
+            for key in hdf.keys():
+                if "regions" not in key:
+                    continue
+                this_group = int(key.split("/")[1].strip("group_"))
+                this_contig = contig_map.loc[contig_map["group"] == this_group, "contig"]
+                assert this_contig.shape[0] == 1
+                this_contig, asm_unit = this_contig.values[0].rsplit(".", 1)
+
+                data = hdf[key]
+                data["contig"] = this_contig
+                data["asm_unit"] = asm_unit
+                data.reset_index(drop=True, inplace=True)
+                dump_regions.append(data)
+
+        dump_regions = pd.concat(dump_regions, axis=0, ignore_index=False)
+        dump_regions.sort_values(["contig", "start", "end"], inplace=True)
+        dump_regions = dump_regions[column_sort]
+
+        with gzip.open(output.bed, "wt") as dump:
+            _ = dump.write("#")
+            dump_regions.to_csv(dump, header=True, index=False, sep="\t")
+    # END OF RUN BLOCK
+
+
+rule run_all_nucfreq_jobs:
     input:
         hdf = expand(
             rules.build_nucfreq_cache.output.hdf,
             sample=SAMPLES,
             read_type=["hifi"],
             aln_subset=["onlyPRI"]
+        ),
+        regions = expand(
+            rules.dump_nucfreq_flagged_regions.output.bed,
+            sample=SAMPLES
         )
-
