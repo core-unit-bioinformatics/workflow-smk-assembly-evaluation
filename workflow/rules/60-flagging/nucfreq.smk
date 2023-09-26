@@ -33,7 +33,12 @@ rule build_nucfreq_cache:
 
 rule dump_nucfreq_flagged_regions:
     input:
-        hdf = rules.build_nucfreq_cache.output.hdf
+        hdf = expand(
+            rules.build_nucfreq_cache.output.hdf,
+            read_type="hifi",
+            aln_subset="onlyPRI",
+            allow_missing=True
+        )
     output:
         bed = DIR_RES.joinpath(
             "regions", "{sample}",
@@ -47,9 +52,11 @@ rule dump_nucfreq_flagged_regions:
             "contig", "start", "end",
             "asm_unit", "num_hets", "het_pct"
         ]
+        # due to expand, turned into a list
+        hdf_cache = input.hdf[0]
 
         dump_regions = []
-        with pd.HDFStore(input.hdf, "r") as hdf:
+        with pd.HDFStore(hdf_cache, "r") as hdf:
             contig_map = hdf["/group_table"]
             for key in hdf.keys():
                 if "regions" not in key:
