@@ -123,7 +123,8 @@ rule extract_issue_windows_readcov_empty:
             # by construction, the contigs are tagged;
             # turn back into regular contig names here
             dump_regions.rename({"contig": "tagged_contig"}, axis=1, inplace=True)
-            value_columns = dump_regions.columns[4:]
+            # everything except 0/contig - 1/start - 2/end - 3/name
+            value_columns = list(dump_regions.columns[4:])
             dump_regions["contig"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[0])
             dump_regions["asm_unit"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[1])
             dump_regions.drop("tagged_contig", axis=1, inplace=True)
@@ -213,7 +214,8 @@ rule extract_issue_windows_readcov_onetype:
             # by construction, the contigs are tagged;
             # turn back into regular contig names here
             dump_regions.rename({"contig": "tagged_contig"}, axis=1, inplace=True)
-            value_columns = dump_regions.columns[4:]
+            # everything except 0/contig - 1/start - 2/end - 3/name
+            value_columns = list(dump_regions.columns[4:])
             dump_regions["contig"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[0])
             dump_regions["asm_unit"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[1])
             dump_regions.drop("tagged_contig", axis=1, inplace=True)
