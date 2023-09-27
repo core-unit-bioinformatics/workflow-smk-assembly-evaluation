@@ -128,7 +128,7 @@ rule extract_issue_windows_readcov_empty:
             dump_regions["contig"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[0])
             dump_regions["asm_unit"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[1])
             dump_regions.drop("tagged_contig", axis=1, inplace=True)
-            dump_regions.columns = dump_regions[["contig", "start", "end", "name", "asm_unit"] + value_columns]
+            dump_regions = dump_regions[["contig", "start", "end", "name", "asm_unit"] + value_columns]
 
             with gz.open(output.bed, "wt") as bed:
                 _ = bed.write("#")
@@ -219,7 +219,7 @@ rule extract_issue_windows_readcov_onetype:
             dump_regions["contig"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[0])
             dump_regions["asm_unit"] = dump_regions["tagged_contig"].apply(lambda x: x.rsplit(".", 1)[1])
             dump_regions.drop("tagged_contig", axis=1, inplace=True)
-            dump_regions.columns = dump_regions[["contig", "start", "end", "name", "asm_unit"] + value_columns]
+            dump_regions = dump_regions[["contig", "start", "end", "name", "asm_unit"] + value_columns]
 
             with gz.open(output.bed, "wt") as bed:
                 _ = bed.write("#")
