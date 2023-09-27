@@ -10,9 +10,12 @@ rule define_clean_assembly_regions:
             allow_missing=True,
         )
     output:
-        bed = DIR_RES.joinpath(
-            "regions", "{sample}", "{sample}.uncontaminated.bed"
-        )
+        tag_tig = DIR_RES.joinpath(
+            "regions", "{sample}", "{sample}.uncontaminated.tag-contig.bed"
+        ),
+        tag_name = DIR_RES.joinpath(
+            "regions", "{sample}", "{sample}.uncontaminated.tag-name.bed"
+        ),
     run:
         import pandas as pd
         import pathlib as pl
@@ -44,9 +47,20 @@ rule define_clean_assembly_regions:
         regions = pd.concat(regions, axis=0, ignore_index=False)
         regions.sort_values(["contig", "start"], inplace=True)
 
-        with open(output.bed, "w") as dump:
+        with open(output.tag_tig, "w") as dump:
             _ = dump.write("#")
             regions[["contig", "start", "end"]].to_csv(
+                dump, sep="\t", header=True, index=False
+            )
+
+        regions["name"] = regions["contig"].apply(lambda x: x.rsplit(".", 1)[1])
+        regions["contig_drop"] = regions["contig"]
+        regions["contig"] = regions["contig_drop"].apply(lambda x: x.rsplit(".", 1)[0])
+        regions.drop("contig_drop", axis=1, inplace=True)
+
+        with open(output.tag_name, "w") as dump:
+            _ = dump.write("#")
+            regions[["contig", "start", "end", "name"]].to_csv(
                 dump, sep="\t", header=True, index=False
             )
     # END OF RUN BLOCK
