@@ -41,5 +41,5 @@ rule run_all_assembly_statistics:
         stats = expand(
             rules.compute_assembly_sequence_statistics.output.summary,
             sample=SAMPLES,
-            seq_type=ASSEMBLY_UNITS_NO_CONTAM
+            seq_type=ASSEMBLY_UNITS_PLUS_CONTAM
         )
