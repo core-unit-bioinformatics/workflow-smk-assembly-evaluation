@@ -39,7 +39,7 @@ rule repeatmasker_assembly_run:
     shell:
         "pigz -p {threads} -d -c {input.fasta} > {params.unzip_tmp}"
             " && "
-        "RepeatMasker -pa {threads} -s -dir {params.out_dir} -species human {unzip_tmp} &> {log}"
+        "RepeatMasker -pa {threads} -s -dir {params.out_dir} -species human {params.unzip_tmp} &> {log}"
             " && "
         "touch {output.check}"
             " ; "
