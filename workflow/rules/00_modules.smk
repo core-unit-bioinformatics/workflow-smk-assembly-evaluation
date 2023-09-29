@@ -28,4 +28,6 @@ include: "60-flagging/pyutils.smk"
 include: "60-flagging/nucfreq.smk"
 include: "60-flagging/readcov.smk"
 
+include: "70-annotate/repeatmasker.smk"
+
 include: "80-statistics/assemblies.smk"

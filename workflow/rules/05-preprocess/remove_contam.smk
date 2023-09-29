@@ -1,5 +1,8 @@
 
 rule remove_assembly_contaminants:
+    """
+    TODO: get assembly units per sample (see output)
+    """
     input:
         rep_adap = rules.normalize_merge_ncbi_fcs_adaptor_report.output.report,
         rep_contam = rules.normalize_merge_ncbi_fcs_contamination_report.output.report,
