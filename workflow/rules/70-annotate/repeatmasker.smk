@@ -3,11 +3,14 @@ rule repeatmasker_assembly_run:
     """
     TODO: hard-coded default for human - make parameter
     TODO: unify wildcard naming - seq_type == asm_unit
+    TODO: uses default RepeatMasker library - has to be downloaded manually!!!
+
     NB: RepeatMasker cannot process compressed files, but the
     main process does not abort, just the I/O part seems to die
     """
     input:
-        fasta = rules.compress_clean_assembly_sequences.output.fagz
+        fasta = rules.compress_clean_assembly_sequences.output.fagz,
+        replib = DIR_GLOBAL_REF.joinpath("Dfam.h5")
     output:
         check = DIR_PROC.joinpath(
             "70-annotate", "repeatmasker",
@@ -39,7 +42,8 @@ rule repeatmasker_assembly_run:
     shell:
         "pigz -p {threads} -d -c {input.fasta} > {params.unzip_tmp}"
             " && "
-        "RepeatMasker -pa {threads} -s -dir {params.out_dir} -species human {params.unzip_tmp} &> {log}"
+        "RepeatMasker -pa {threads} -s -dir {params.out_dir} "
+        "-species human -lib {input.replib} {params.unzip_tmp} &> {log}"
             " && "
         "touch {output.check}"
             " ; "
