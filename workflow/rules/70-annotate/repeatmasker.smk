@@ -34,8 +34,8 @@ rule repeatmasker_assembly_run:
         DIR_ENVS.joinpath("biotools", "motifs.yaml")
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, attempt: 4096 * attempt * 4,
-        time_hrs = lambda wildcards, attempt: attempt * attempt * 4,
+        mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
+        time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".wd"),
         unzip_tmp = lambda wildcards, output: pathlib.Path(output.check).with_suffix(".tmp.fa"),
