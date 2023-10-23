@@ -14,11 +14,11 @@ rule repeatmasker_assembly_run:
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
     output:
         repmask_out = multiext(
-            DIR_PROC.joinpath(
+            str(DIR_PROC.joinpath(
                 "70-annotate", "repeatmasker",
                 "{sample}.{seq_type}.repmask.wd",
                 "{sample}.{seq_type}.repmask.tmp.fa"
-            ),
+            )),
             ".cat.gz", ".masked", ".out", ".tbl"
         )
     log:
