@@ -145,7 +145,7 @@ rule normalize_repeatmasker_table:
         with gzip.open(output.tsv, 'wt') as table:
             for pos, head, comment in names_explained:
                 _ = table.write(f'##.{pos} - {head} - {comment}\n')
-        df.to_csv(table, mode="a", sep='\t', header=True, index=False)
+        df.to_csv(output.tsv, mode="a", sep='\t', header=True, index=False)
     # END OF RUN BLOCK
 
 
