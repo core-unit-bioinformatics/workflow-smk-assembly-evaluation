@@ -93,7 +93,7 @@ rule normalize_repeatmasker_table:
         ),
     output:
         tsv = DIR_RES.joinpath(
-            "annotations", "repeatmasker"
+            "annotations", "repeatmasker",
             "{sample}.{seq_type}.repmask.matches.tsv.gz"
         ),
     resources:
