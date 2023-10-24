@@ -2,7 +2,7 @@
 rule repeatmasker_assembly_run:
     """
     TODO: hard-coded default for human - make parameter
-    TODO: unify wildcard naming - seq_type == asm_unit
+    TODO: unify wildcard naming - asm_unit == asm_unit
     TODO: uses default RepeatMasker library - has to be downloaded manually
     and copied into the respective Conda env --- no offline deployment possible!
     see: github.com/rmhubley/RepeatMasker/issues/233
@@ -16,20 +16,20 @@ rule repeatmasker_assembly_run:
         repmask_out = multiext(
             str(DIR_PROC.joinpath(
                 "70-annotate", "repeatmasker",
-                "{sample}.{seq_type}.repmask.wd",
-                "{sample}.{seq_type}.repmask.tmp.fa"
+                "{sample}.{asm_unit}.repmask.wd",
+                "{sample}.{asm_unit}.repmask.tmp.fa"
             )),
             ".cat.gz", ".masked", ".out", ".tbl"
         )
     log:
         DIR_LOG.joinpath(
             "70-annotate", "repeatmasker",
-            "{sample}.{seq_type}.repmask.log"
+            "{sample}.{asm_unit}.repmask.log"
         )
     benchmark:
         DIR_RSRC.joinpath(
             "70-annotate", "repeatmasker",
-            "{sample}.{seq_type}.repmask.rsrc"
+            "{sample}.{asm_unit}.repmask.rsrc"
         )
     conda:
         DIR_ENVS.joinpath("biotools", "motifs.yaml")
@@ -55,7 +55,7 @@ rule collect_repeatmasker_output:
     output:
         tar = DIR_RES.joinpath(
                 "annotations", "repeatmasker",
-                "{sample}.{seq_type}.repmask.raw.tar.gz",
+                "{sample}.{asm_unit}.repmask.raw.tar.gz",
             )
     resources:
         time_hrs=lambda wildcards, attempt: max(0, attempt - 1)
@@ -76,7 +76,7 @@ rule collect_repeatmasker_output:
             logerr(
                 (
                     "tar of RepeatMasker output failed: "
-                    f"{wildcards.sample} / {wildcards.seq_type} "
+                    f"{wildcards.sample} / {wildcards.asm_unit} "
                     "\nOriginal command string:\n"
                     f"{tar_cmd}"
                 ))
@@ -88,13 +88,13 @@ rule normalize_repeatmasker_table:
     input:
         table = DIR_PROC.joinpath(
             "70-annotate", "repeatmasker",
-            "{sample}.{seq_type}.repmask.wd",
-            "{sample}.{seq_type}.repmask.tmp.fa.out"
+            "{sample}.{asm_unit}.repmask.wd",
+            "{sample}.{asm_unit}.repmask.tmp.fa.out"
         ),
     output:
         tsv = DIR_RES.joinpath(
             "annotations", "repeatmasker",
-            "{sample}.{seq_type}.repmask.matches.tsv.gz"
+            "{sample}.{asm_unit}.repmask.matches.tsv.gz"
         ),
     resources:
         mem_mb = lambda wildcards, attempt: 1024 * attempt
@@ -164,12 +164,12 @@ rule run_all_repeatmasker_jobs:
         norm_tables = expand(
             rules.normalize_repeatmasker_table.output.tsv,
             sample=SAMPLES,
-            seq_type=ASSEMBLY_UNITS_NO_CONTAM
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         ),
         tars = expand(
             rules.collect_repeatmasker_output.output.tar,
             sample=SAMPLES,
-            seq_type=ASSEMBLY_UNITS_NO_CONTAM
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         ),
     shell:
         "rm -rf RM_*"

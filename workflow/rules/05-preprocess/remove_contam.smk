@@ -35,17 +35,17 @@ rule compress_clean_assembly_sequences:
     input:
         fasta = DIR_PROC.joinpath(
             "05-preprocess", "remove_contam",
-            "{sample}.{seq_type}.tmp.fa"
+            "{sample}.{asm_unit}.tmp.fa"
         )
     output:
         fagz = DIR_RES.joinpath(
-            "assemblies", "{sample}", "{sample}.{seq_type}.fasta.gz"
+            "assemblies", "{sample}", "{sample}.{asm_unit}.fasta.gz"
         ),
         fai = DIR_RES.joinpath(
-            "assemblies", "{sample}", "{sample}.{seq_type}.fasta.gz.fai"
+            "assemblies", "{sample}", "{sample}.{asm_unit}.fasta.gz.fai"
         ),
         gzi = DIR_RES.joinpath(
-            "assemblies", "{sample}", "{sample}.{seq_type}.fasta.gz.gzi"
+            "assemblies", "{sample}", "{sample}.{asm_unit}.fasta.gz.gzi"
         ),
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
@@ -73,7 +73,7 @@ rule define_clean_assembly_regions:
         asm_tags = rules.create_sequence_tags_file.output.tagfile,
         fai_files = expand(
             rules.compress_clean_assembly_sequences.output.fai,
-            seq_type=ASSEMBLY_UNITS_NO_CONTAM,
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
             allow_missing=True,
         )
     output:
@@ -139,12 +139,12 @@ rule run_all_clean_assembly:
         asm_units = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
             sample=SAMPLES,
-            seq_type=[f"asm-{unit}" for unit in ["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]]
+            asm_unit=[f"asm-{unit}" for unit in ["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]]
         ),
         contam = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
             sample=SAMPLES,
-            seq_type=["contaminants"]
+            asm_unit=["contaminants"]
         ),
         regions_tagged = expand(
             rules.define_clean_assembly_regions.output.tag_tig,

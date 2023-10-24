@@ -3,17 +3,17 @@
 rule compute_assembly_sequence_statistics:
     input:
         fagz = DIR_RES.joinpath(
-            "assemblies", "{sample}", "{sample}.{seq_type}.fasta.gz"
+            "assemblies", "{sample}", "{sample}.{asm_unit}.fasta.gz"
         ),
     output:
         stats = DIR_RES.joinpath(
-            "statistics", "assemblies", "{sample}.{seq_type}.statistics.tsv.gz"
+            "statistics", "assemblies", "{sample}.{asm_unit}.statistics.tsv.gz"
         ),
         summary = DIR_RES.joinpath(
-            "statistics", "assemblies", "{sample}.{seq_type}.summary.tsv"
+            "statistics", "assemblies", "{sample}.{asm_unit}.summary.tsv"
         )
     benchmark:
-        DIR_RSRC.joinpath("statistics", "assemblies", "{sample}.{seq_type}.seqstats.rsrc")
+        DIR_RSRC.joinpath("statistics", "assemblies", "{sample}.{asm_unit}.seqstats.rsrc")
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
     threads: CPU_HIGH
@@ -22,7 +22,7 @@ rule compute_assembly_sequence_statistics:
         time_hrs=lambda wildcards, attempt: attempt * attempt,
     params:
         script=find_script("seqstats"),
-        report_seq_lens=lambda wildcards: SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.get(wildcards.seq_type, "default"),
+        report_seq_lens=lambda wildcards: SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.get(wildcards.asm_unit, "default"),
         acc_res=lambda wildcards, output: register_result(output)
     shell:
         "{params.script} --cores {threads} "
@@ -41,5 +41,5 @@ rule run_all_assembly_statistics:
         stats = expand(
             rules.compute_assembly_sequence_statistics.output.summary,
             sample=SAMPLES,
-            seq_type=ASSEMBLY_UNITS_PLUS_CONTAM
+            asm_unit=ASSEMBLY_UNITS_PLUS_CONTAM
         )

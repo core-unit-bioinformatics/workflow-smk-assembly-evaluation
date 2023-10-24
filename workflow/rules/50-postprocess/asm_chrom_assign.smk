@@ -5,11 +5,11 @@ rule estimate_chromosome_assignment:
     output:
         tsv_query = DIR_RES.joinpath(
             "reports", "ref_chrom_assign",
-            "{sample}.{seq_type}.{ref}.chrom-assign-by-query.tsv"
+            "{sample}.{asm_unit}.{ref}.chrom-assign-by-query.tsv"
         ),
         tsv_target = DIR_RES.joinpath(
             "reports", "ref_chrom_assign",
-            "{sample}.{seq_type}.{ref}.chrom-assign-by-target.tsv"
+            "{sample}.{asm_unit}.{ref}.chrom-assign-by-target.tsv"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
@@ -29,24 +29,24 @@ rule run_chromosome_assignments:
             rules.estimate_chromosome_assignment.output.tsv_query,
             ref=["t2tv2"],
             sample=SAMPLES,
-            seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
         tsv_target = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
             ref=["t2tv2"],
             sample=SAMPLES,
-            seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
         tsv_qry_rdna = expand(
             rules.estimate_chromosome_assignment.output.tsv_query,
             ref=["t2tv2"],
             sample=SAMPLES,
-            seq_type=["asm-rdna"],
+            asm_unit=["asm-rdna"],
         ),
         tsv_trg_rdna = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
             ref=["t2tv2"],
             sample=SAMPLES,
-            seq_type=["asm-rdna"],
+            asm_unit=["asm-rdna"],
         )
 

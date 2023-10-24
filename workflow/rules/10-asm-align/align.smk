@@ -12,7 +12,7 @@ rule minimap_assembly_to_reference_align_paf:
     output:
         paf = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "paf", "{sample}.{seq_type}.{ref}.paf.gz"
+            "paf", "{sample}.{asm_unit}.{ref}.paf.gz"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -32,7 +32,7 @@ rule normalize_minimap_assembly_to_reference_align_paf:
     output:
         tsv = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "table", "{sample}.{seq_type}.{ref}.norm-paf.tsv.gz"
+            "table", "{sample}.{asm_unit}.{ref}.norm-paf.tsv.gz"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
@@ -51,15 +51,15 @@ rule minimap_assembly_to_reference_align_bam:
     output:
         bam = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{seq_type}.{ref}.sort.bam"
+            "bam", "{sample}.{asm_unit}.{ref}.sort.bam"
         ),
         bai = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{seq_type}.{ref}.sort.bam.bai"
+            "bam", "{sample}.{asm_unit}.{ref}.sort.bam.bai"
         ),
         unmapped = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{seq_type}.{ref}.unmapped.bam"
+            "bam", "{sample}.{asm_unit}.{ref}.unmapped.bam"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -70,7 +70,7 @@ rule minimap_assembly_to_reference_align_bam:
         sort_mem_mb = lambda wildcards, attempt: 1024 * attempt
     params:
         readgroup = lambda wildcards: (
-            f'"@RG\\tID:{wildcards.sample}_{wildcards.seq_type}'
+            f'"@RG\\tID:{wildcards.sample}_{wildcards.asm_unit}'
             f'\\tSM:{wildcards.sample}"'
         ),
         sam_flag_out = 1540,  # unmap, PCR-dup, QC-fail --- keep 2nd align!
@@ -84,7 +84,7 @@ rule minimap_assembly_to_reference_align_bam:
             " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
-        " -T {wildcards.sample}_{wildcards.seq_type}_{wildcards.ref}_mm2 -o {output.bam} "
+        " -T {wildcards.sample}_{wildcards.asm_unit}_{wildcards.ref}_mm2 -o {output.bam} "
             " && "
         "samtools index -@ {threads} {output.bam}"
 
@@ -96,11 +96,11 @@ rule run_minimap_contig_to_ref_alignments:
                 rules.minimap_assembly_to_reference_align_bam.output.bam,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
+                asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         ),
         paf = expand(
                 rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv,
                 ref=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
-                seq_type=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "rdna"]]
+                asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         )
