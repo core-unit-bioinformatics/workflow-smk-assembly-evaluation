@@ -8,3 +8,6 @@ refgenomes:
     male: chm13v2.0.fasta
     female: chm13v2.0_maskedY.fasta
     any: chm13v2.0.fasta
+
+genemodels:
+  gencodeV43: gencode.v43.transcripts.fa.gz

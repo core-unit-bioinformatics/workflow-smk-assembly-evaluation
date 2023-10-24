@@ -31,4 +31,7 @@ include: "60-flagging/readcov.smk"
 include: "70-annotate/pyutils.smk"
 include: "70-annotate/repeatmasker.smk"
 
+include: "75-completeness/pyutils.smk"
+include: "75-completeness/asmgene.smk"
+
 include: "80-statistics/assemblies.smk"
