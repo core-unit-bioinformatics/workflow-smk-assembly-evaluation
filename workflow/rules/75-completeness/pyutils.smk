@@ -7,7 +7,7 @@ def get_genemodel(gene_model):
     return model_path
 
 
-def get_reference_genome(ref_genome):
+def get_reference_genome(refgenome):
 
     matched_ref = config["refgenomes"][refgenome]["any"]
     ref_path = DIR_GLOBAL_REF.joinpath(matched_ref)
