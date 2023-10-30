@@ -77,19 +77,25 @@ rule mosdepth_merge_region_contig_coverage:
 
 
 rule run_assembly_reference_coverage:
+    """
+    TODO
+    need to adapt solution with ASSEMBLY_UNITS_NO_CONTAM,
+    does not work for special cases such as Verkko's rDNA
+    output
+    """
     input:
         windowed = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
             mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
         ),
         rdna_win = expand(
             rules.mosdepth_assembly_reference_coverage_window.output.check,
             ref=["t2tv2"],
             sample=SAMPLES,
-            asm_unit=["asm-rdna"],
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
             mapq=MOSDEPTH_ASSM_REF_COV_MAPQ_THRESHOLDS
         ),
         merged = expand(
