@@ -13,7 +13,7 @@ rule remove_assembly_contaminants:
             "{sample}.contaminants.tmp.fa"
         ),
         asm_units = [
-            DIR_PROC.joinpath("05-preprocess", "remove_contam", f"{{sample}}.asm-{asm_unit}.tmp.fa")
+            DIR_PROC.joinpath("05-preprocess", "remove_contam", f"{{sample}}.{asm_unit}.tmp.fa")
             for asm_unit in ASSEMBLY_UNITS_NO_CONTAM
         ]
     log:
