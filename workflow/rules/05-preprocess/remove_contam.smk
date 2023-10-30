@@ -14,7 +14,7 @@ rule remove_assembly_contaminants:
         ),
         asm_units = [
             DIR_PROC.joinpath("05-preprocess", "remove_contam", f"{{sample}}.asm-{asm_unit}.tmp.fa")
-            for asm_unit in ["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]
+            for asm_unit in ASSEMBLY_UNITS_NO_CONTAM
         ]
     log:
         DIR_LOG.joinpath("05-preprocess", "remove_contam", "{sample}.filter.log")
@@ -139,7 +139,7 @@ rule run_all_clean_assembly:
         asm_units = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
             sample=SAMPLES,
-            asm_unit=[f"asm-{unit}" for unit in ["hap1", "hap2", "unassigned", "disconnected", "ebv", "rdna", "mito"]]
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         ),
         contam = expand(
             rules.compress_clean_assembly_sequences.output.fagz,
