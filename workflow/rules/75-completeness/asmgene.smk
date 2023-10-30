@@ -1,9 +1,20 @@
 
 
+# rule preprocess_gene_model:
+#     input:
+#         cdna = lambda wildcards: get_gene_model(wildcards.genemodel),
+#         gtf = lambda wildcards: get_gene_annotation(wildcards.genemodel)
+#     output:
+#         full_male = DIR_LOCAL_REF.joinpath(""),
+#         full_female = DIR_LOCAL_REF.joinpath("")
+#     run:
+
+
+
 rule ref_completeness_genemodel:
     input:
         fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
-        cdna = lambda wildcards: get_genemodel(wildcards.genemodel)
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel)
     output:
         paf = DIR_PROC.joinpath(
             "75-completeness", "asmgene",
@@ -24,7 +35,7 @@ rule ref_completeness_genemodel:
 rule asm_completeness_genemodel:
     input:
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
-        cdna = lambda wildcards: get_genemodel(wildcards.genemodel)
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel)
     output:
         paf = DIR_PROC.joinpath(
             "75-completeness", "asmgene",

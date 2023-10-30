@@ -9,5 +9,11 @@ refgenomes:
     female: chm13v2.0_maskedY.fasta
     any: chm13v2.0.fasta
 
-genemodels:
+male_chromosome:
+  - chrY
+
+gene_models:
   gencodeV43: gencode.v43.transcripts.fa.gz
+
+gene_annotations:
+  gencodeV43: gencode.v43.basic.annotation.gtf.gz
