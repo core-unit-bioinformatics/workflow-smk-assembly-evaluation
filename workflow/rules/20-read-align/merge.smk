@@ -54,7 +54,7 @@ rule extract_primary_alignment_read_lists:
         DIR_ENVS.joinpath("pyseq.yaml")
     threads: CPU_LOW
     resources:
-        mem_mb=lambda wildcards, attempt: 4096 + 2048 * attempt,
+        mem_mb=lambda wildcards, attempt: 4096 + 4096 * attempt,
         time_hrs=lambda wildcards, attempt: attempt
     params:
         script=find_script("get_pct_aligned"),
