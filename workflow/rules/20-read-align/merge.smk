@@ -37,3 +37,43 @@ rule merge_read_to_assembly_subset_alignments:
         "samtools merge -r -f --threads {threads} -o {output.bam} {input.bams}"
             " && "
         "samtools index -@ {threads} {output.bam}"
+
+
+rule extract_primary_alignment_read_lists:
+    input:
+        bam = rules.merge_read_to_assembly_subset_alignments.output.bam,
+        bai = rules.merge_read_to_assembly_subset_alignments.output.bai
+    output:
+        read_list = DIR_RES.joinpath(
+            "read_sets", "{sample}.{read_type}.onlyPRI.reads.tsv.gz"
+        ),
+        cov_cache = DIR_PROC.joinpath(
+            "20-read-align", "30_cache_cov", "{sample}.{read_type}.onlyPRI.ctg-cov.h5"
+        )
+    conda:
+        DIR_ENVS.joinpath("pyseq.yaml")
+    threads: CPU_LOW
+    resources:
+        mem_mb=lambda wildcards, attempt: 4096 + 2048 * attempt,
+        time_hrs=lambda wildcards, attempt: attempt
+    params:
+        script=find_script("get_pct_aligned"),
+        min_length=lambda wildcards: {"hifi": 5000, "ont": 10000}[wildcards.read_type],
+        min_aligned=lambda wildcards: {"hifi": 99, "ont": 95}[wildcards.read_type]
+    shell:
+        "{params.script} --input {input.bam} --io-threads {threads} "
+            "--min-pct-aligned {params.min_aligned} --min-read-length {params.min_length} "
+            "-tsv {output.read_list} -hdf {output.cov_cache}"
+
+
+rule run_all_get_primary_alignment_read_lists:
+    """
+    TODO
+    read types should be encoded as wildcard variable
+    """
+    input:
+        tsv = expand(
+            rules.extract_primary_alignment_read_lists.output.read_list,
+            sample=SAMPLES,
+            read_type=["hifi", "ont"]
+        )
