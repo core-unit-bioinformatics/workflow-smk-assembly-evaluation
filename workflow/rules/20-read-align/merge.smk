@@ -45,10 +45,10 @@ rule extract_primary_alignment_read_lists:
         bai = rules.merge_read_to_assembly_subset_alignments.output.bai
     output:
         read_list = DIR_RES.joinpath(
-            "read_sets", "{sample}.{read_type}.onlyPRI.reads.tsv.gz"
+            "read_sets", "{sample}.{read_type}.{aln_subset}.reads.tsv.gz"
         ),
         cov_cache = DIR_PROC.joinpath(
-            "20-read-align", "30_cache_cov", "{sample}.{read_type}.onlyPRI.ctg-cov.h5"
+            "20-read-align", "30_cache_cov", "{sample}.{read_type}.{aln_subset}.ctg-cov.h5"
         )
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
@@ -75,5 +75,6 @@ rule run_all_get_primary_alignment_read_lists:
         tsv = expand(
             rules.extract_primary_alignment_read_lists.output.read_list,
             sample=SAMPLES,
+            aln_subset=["onlyPRI"],
             read_type=["hifi", "ont"]
         )
