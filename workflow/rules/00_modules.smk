@@ -20,7 +20,9 @@ include: "20-read-align/align.smk"
 include: "20-read-align/filter.smk"
 include: "20-read-align/merge.smk"
 
+include: "50-postprocess/pyutils.smk"
 include: "50-postprocess/asm_chrom_assign.smk"
+include: "50-postprocess/asm_karyo_est.smk"
 include: "50-postprocess/asm_ctg_refcov.smk"
 include: "50-postprocess/asm_ctg_readcov.smk"
 

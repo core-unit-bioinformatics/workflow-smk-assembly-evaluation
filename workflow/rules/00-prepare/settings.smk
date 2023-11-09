@@ -4,7 +4,17 @@ PATH_ID_LENGTH = 8
 DATA_ROOT = config.get("data_root", "/")
 DATA_ROOT = pathlib.Path(DATA_ROOT).resolve(strict=True)
 
-WILDCARDS_REF_GENOMES = ["hg38", "t2tv2"]
+WILDCARDS_REF_GENOMES = list(config.get("refgenomes", dict()).keys())
+if not WILDCARDS_REF_GENOMES:
+    logerr("No reference genomes specified in config - entry 'refgenomes' is missing?")
+    raise ValueError("No reference genomes specified")
+
+WILDCARDS_GENE_MODELS = list(config.get("gene_models", dict()).keys())
+
+# For analyses that require a (mostly) complete reference genome,
+# use this one (e.g., gene completeness, assembly of complex regions such as rDNA)
+COMPLETE_REF_GENOME = config.get("complete_reference", WILDCARDS_REF_GENOMES[0])
+assert COMPLETE_REF_GENOME in WILDCARDS_REF_GENOMES
 
 # STATISTICS PARAMETERS
 
@@ -23,6 +33,25 @@ for asm_unit, thresholds in config.get("sequence_length_thresholds_assembly", di
     SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY[lookup_name] = thresholds
 ASSEMBLY_UNITS_PLUS_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k != "default")
 ASSEMBLY_UNITS_NO_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY.keys() if k not in ["default", "contaminants"])
+
+# This is needed to assess assembly completeness in terms
+# of gene model completeness. The module 50-postprocess::asm_karyo_est
+# assigns a sex to these assembly components using just the contig-to-reference
+# alignments plus the info which chromosomes are indicating the respective
+# sex in the karyotype
+ASSEMBLY_UNITS_SEX_SPECIFIC = []
+for asm_unit in config.get("sex_specific_assembly_units", []):
+    if asm_unit.startswith("asm_"):
+        ASSEMBLY_UNITS_SEX_SPECIFIC.append(asm_unit)
+    else:
+        lookup_name = f"asm_{asm_unit}"
+        if lookup_name not in ASSEMBLY_UNITS_PLUS_CONTAM:
+            logerr(f"Name of sex-specific assembly unit seems to be malformed: {asm_unit} / {lookup_name}")
+            raise ValueError("Name of assembly units must be 'asm_NAME' (NAME all lowercase characters).")
+        ASSEMBLY_UNITS_SEX_SPECIFIC.append(lookup_name)
+
+FORCE_ANNOTATED_SAMPLE_SEX = config.get("force_annotated_sample_sex", False)
+assert isinstance(FORCE_ANNOTATED_SAMPLE_SEX, bool)
 
 # TOOL PARAMETERS
 

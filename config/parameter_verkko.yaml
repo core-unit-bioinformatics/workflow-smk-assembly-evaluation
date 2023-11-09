@@ -21,6 +21,10 @@ sequence_length_thresholds_assembly:
   rdna: *setting2
   contaminants: *setting2
 
+sex_specific_assembly_units:
+  - hap1
+  - hap2
+
 # controls rules in
 # 50-postprocess::asm_ctg_readcov.smk
 # 60-flagging::readcov.smk
@@ -31,6 +35,3 @@ groups_window_read_coverage:
   - hap
   - unassigned
   - disconnected
-
-# controls behavior for gene completeness
-select_only_main_chromosomes: True

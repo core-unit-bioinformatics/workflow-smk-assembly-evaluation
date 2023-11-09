@@ -1,24 +1,71 @@
 
-
-# rule preprocess_gene_model:
-#     input:
-#         cdna = lambda wildcards: get_gene_model(wildcards.genemodel),
-#         gtf = lambda wildcards: get_gene_annotation(wildcards.genemodel)
-#     output:
-#         full_male = DIR_LOCAL_REF.joinpath(""),
-#         full_female = DIR_LOCAL_REF.joinpath("")
-#     run:
-
-
-
-rule ref_completeness_genemodel:
+rule ref_completeness_genemodel_any:
+    """
+    This rule and the two subsequent ones violate the principle
+    of not duplicating code. Why? Creating sex-specific reference
+    gene model alignments in a single rule would require intro-
+    ducing a new wildcard (sex, e.g., any / male / female) but the
+    karyotype assignment for phased assemblies happens as part of
+    this workflow. Hence, the information which sex-specific gene
+    model to use is only available as an output of this workflow.
+    Feeding back that information as a new wildcard to trigger
+    all runs in the rule
+    > run_all_asm_completeness_asmgene
+    is not explicitly possible. As a consequence, duplicating the
+    code for the reference gene model alignment seems to be the
+    cleaner solution, which also enables a straightforward selection
+    of the right gene model via an input function in the rule
+    > asm_completeness_asmgene_stats
+    """
     input:
         fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
-        cdna = lambda wildcards: get_gene_model(wildcards.genemodel)
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, None, wildcards.refgenome, "any")
     output:
         paf = DIR_PROC.joinpath(
             "75-completeness", "asmgene",
-            "{refgenome}.{genemodel}.paf.gz"
+            "{refgenome}.{genemodel}.any.paf.gz"
+        )
+    conda:
+        DIR_ENVS.joinpath("aligner", "minimap.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        time_hrs = lambda wildcards, attempt: 1 * attempt,
+        mem_mb = lambda wildcards, attempt: 32768 + 32768 * attempt,
+    shell:
+        "minimap2 -cxsplice:hq -t {threads} {input.fasta} {input.cdna}"
+            " | "
+        "pigz > {output.paf}"
+
+
+rule ref_completeness_genemodel_female:
+    input:
+        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, None, wildcards.refgenome, "female")
+    output:
+        paf = DIR_PROC.joinpath(
+            "75-completeness", "asmgene",
+            "{refgenome}.{genemodel}.female.paf.gz"
+        )
+    conda:
+        DIR_ENVS.joinpath("aligner", "minimap.yaml")
+    threads: CPU_MEDIUM
+    resources:
+        time_hrs = lambda wildcards, attempt: 1 * attempt,
+        mem_mb = lambda wildcards, attempt: 32768 + 32768 * attempt,
+    shell:
+        "minimap2 -cxsplice:hq -t {threads} {input.fasta} {input.cdna}"
+            " | "
+        "pigz > {output.paf}"
+
+
+rule ref_completeness_genemodel_male:
+    input:
+        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, None, wildcards.refgenome, "male")
+    output:
+        paf = DIR_PROC.joinpath(
+            "75-completeness", "asmgene",
+            "{refgenome}.{genemodel}.male.paf.gz"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -34,8 +81,13 @@ rule ref_completeness_genemodel:
 
 rule asm_completeness_genemodel:
     input:
+        asm_karyo = expand(
+            rules.estimate_asm_unit_karyotype.output.karyo_est,
+            ref=COMPLETE_REF_GENOME,
+            allow_missing=True
+        ),
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
-        cdna = lambda wildcards: get_gene_model(wildcards.genemodel)
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, wildcards.sample, None, wildcards.asm_unit)
     output:
         paf = DIR_PROC.joinpath(
             "75-completeness", "asmgene",
@@ -61,8 +113,14 @@ rule asm_completeness_genemodel:
 
 
 rule asm_completeness_asmgene_stats:
+    """
+    paftools.js asmgene -e == print fragmented/missing genes
+    """
     input:
-        ref = rules.ref_completeness_genemodel.output.paf,
+        asm_karyo = rules.estimate_asm_unit_karyotype.output.karyo_est,
+        ref = lambda wildcards: get_reference_gene_model_alignment(
+            wildcards.genemodel, wildcards.sample, wildcards.refgenome, wildcards.asm_unit
+        ),
         assm = rules.asm_completeness_genemodel.output.paf
     output:
         stats = DIR_PROC.joinpath(
@@ -81,14 +139,12 @@ rule asm_completeness_asmgene_stats:
 
 
 rule run_all_asm_completeness_asmgene:
-    """
-    TODO: make wildcard values for refgenome / genemodel config params
-    """
     input:
         asmgene_stats = expand(
             rules.asm_completeness_asmgene_stats.output.stats,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
-            refgenome=["t2tv2"],
-            genemodel=["gencodeV43"]
-        )
+            refgenome=COMPLETE_REF_GENOME,
+            genemodel=WILDCARDS_GENE_MODELS
+        ),
+        karyotypes = rules.build_assembly_karyotype_summary.output.tsv

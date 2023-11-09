@@ -9,11 +9,23 @@ refgenomes:
     female: chm13v2.0_maskedY.fasta
     any: chm13v2.0.fasta
 
-male_chromosome:
-  - chrY
+complete_reference: t2tv2
+
+sex_chromosomes:
+  male:
+    - chrY
+  female:
+    - chrX
+
+# If set to True, enforce to use
+# the annotated sample sex for all
+# sex-specific assembly units.
+# If set to False, infer on the basis
+# of the contig-to-reference alignments
+force_annotated_sample_sex: False
 
 gene_models:
-  gencodeV43: gencode.v43.transcripts.fa.gz
-
-gene_annotations:
-  gencodeV43: gencode.v43.basic.annotation.gtf.gz
+  gencodeV44:
+    male: gencode.v44.pc_transcripts.122Y.fa.gz
+    female: gencode.v44.pc_transcripts.122X.fa.gz
+    any: gencode.v44.pc_transcripts.122XY.fa.gz

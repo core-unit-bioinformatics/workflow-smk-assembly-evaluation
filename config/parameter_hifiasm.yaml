@@ -17,6 +17,10 @@ sequence_length_thresholds_assembly:
   hap1: *setting1
   hap2: *setting1
 
+sex_specific_assembly_units:
+  - hap1
+  - hap2
+
 # controls rules in
 # 50-postprocess::asm_ctg_readcov.smk
 # 60-flagging::readcov.smk

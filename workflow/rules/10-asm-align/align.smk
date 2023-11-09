@@ -7,12 +7,12 @@ rule minimap_assembly_to_reference_align_paf:
     illogical thing to do anyway).
     """
     input:
-        ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.ref),
+        ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
         assm = rules.compress_clean_assembly_sequences.output.fagz
     output:
         paf = DIR_RES.joinpath(
-            "alignments", "contig_to_ref", "{ref}",
-            "paf", "{sample}.{asm_unit}.{ref}.paf.gz"
+            "alignments", "contig_to_ref", "{refgenome}",
+            "paf", "{sample}.{asm_unit}.{refgenome}.paf.gz"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -31,8 +31,8 @@ rule normalize_minimap_assembly_to_reference_align_paf:
         paf = rules.minimap_assembly_to_reference_align_paf.output.paf
     output:
         tsv = DIR_RES.joinpath(
-            "alignments", "contig_to_ref", "{ref}",
-            "table", "{sample}.{asm_unit}.{ref}.norm-paf.tsv.gz"
+            "alignments", "contig_to_ref", "{refgenome}",
+            "table", "{sample}.{asm_unit}.{refgenome}.norm-paf.tsv.gz"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
@@ -46,20 +46,20 @@ rule normalize_minimap_assembly_to_reference_align_paf:
 
 rule minimap_assembly_to_reference_align_bam:
     input:
-        ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.ref),
+        ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
         assm = rules.compress_clean_assembly_sequences.output.fagz
     output:
         bam = DIR_RES.joinpath(
-            "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{asm_unit}.{ref}.sort.bam"
+            "alignments", "contig_to_ref", "{refgenome}",
+            "bam", "{sample}.{asm_unit}.{refgenome}.sort.bam"
         ),
         bai = DIR_RES.joinpath(
-            "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{asm_unit}.{ref}.sort.bam.bai"
+            "alignments", "contig_to_ref", "{refgenome}",
+            "bam", "{sample}.{asm_unit}.{refgenome}.sort.bam.bai"
         ),
         unmapped = DIR_RES.joinpath(
-            "alignments", "contig_to_ref", "{ref}",
-            "bam", "{sample}.{asm_unit}.{ref}.unmapped.bam"
+            "alignments", "contig_to_ref", "{refgenome}",
+            "bam", "{sample}.{asm_unit}.{refgenome}.unmapped.bam"
         )
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
@@ -84,7 +84,7 @@ rule minimap_assembly_to_reference_align_bam:
             " | "
         " samtools sort -l 9 -m {resources.sort_mem_mb}M "
         " --threads {params.sam_threads} "
-        " -T {wildcards.sample}_{wildcards.asm_unit}_{wildcards.ref}_mm2 -o {output.bam} "
+        " -T {wildcards.sample}_{wildcards.asm_unit}_{wildcards.refgenome}_mm2 -o {output.bam} "
             " && "
         "samtools index -@ {threads} {output.bam}"
 
@@ -94,13 +94,13 @@ rule run_minimap_contig_to_ref_alignments:
     input:
         bams = expand(
                 rules.minimap_assembly_to_reference_align_bam.output.bam,
-                ref=WILDCARDS_REF_GENOMES,
+                refgenome=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
                 asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         ),
         paf = expand(
                 rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv,
-                ref=WILDCARDS_REF_GENOMES,
+                refgenome=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
                 asm_unit=ASSEMBLY_UNITS_NO_CONTAM
         )
