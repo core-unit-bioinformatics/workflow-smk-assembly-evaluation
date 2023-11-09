@@ -83,7 +83,7 @@ rule asm_completeness_genemodel:
     input:
         asm_karyo = expand(
             rules.estimate_asm_unit_karyotype.output.karyo_est,
-            ref=COMPLETE_REF_GENOME,
+            refgenome=COMPLETE_REF_GENOME,
             allow_missing=True
         ),
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
