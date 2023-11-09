@@ -47,7 +47,7 @@ def get_gene_model(gene_model, sample, refgenome, sex_or_unit):
         assert sample in SAMPLES
         assert sex_or_unit in ASSEMBLY_UNITS_SEX_SPECIFIC
         karyo_est_file = get_karyotype_est_file(sample, refgenome)
-        if not pl.Path(karyo_est_file).is_file():
+        if not pathlib.Path(karyo_est_file).is_file():
             # file has not been created yet - return mock
             # to make this an explicit failure
             matched_model = f"{sample}-{sex_or_unit}-{refgenome}-no-karyotype.mock"
@@ -66,12 +66,12 @@ def get_reference_gene_model_alignment(gene_model, sample, refgenome, asm_unit):
     this_func = "75-completeness::pyutils::get_reference_gene_model_alignment"
     temp_use_mockup = False
     karyo_est_file = get_karyotype_est_file(sample, refgenome)
-    if not pl.Path(karyo_est_file).is_file() and asm_unit in ASSEMBLY_UNITS_SEX_SPECIFIC:
+    if not pathlib.Path(karyo_est_file).is_file() and asm_unit in ASSEMBLY_UNITS_SEX_SPECIFIC:
         # file has not been created yet - return mock
         # to make this an explicit failure
         matched_alignment = f"{sample}-{asm_unit}-{refgenome}-no-karyotype.mock"
         temp_use_mockup = True
-    elif not pl.Path(karyo_est_file).is_file():
+    elif not pathlib.Path(karyo_est_file).is_file():
         # some other assembly unit / not sex-specific - just use 'any' here
         match_alignment_fmt = {"refgenome": refgenome, "genemodel": gene_model}
         matched_alignment = str(rules.ref_completeness_genemodel_any.output.paf)
