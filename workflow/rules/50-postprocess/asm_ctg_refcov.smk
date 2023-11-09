@@ -100,7 +100,7 @@ rule run_assembly_reference_coverage:
         ),
         merged = expand(
             rules.mosdepth_merge_region_contig_coverage.output.merged_regions,
-            ref=COMPLETE_REF_GENOME,
+            refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES
         )
 
