@@ -39,7 +39,7 @@ def get_gene_model(gene_model, sample, refgenome, sex_or_unit):
     this_func = "75-completeness::pyutils::get_gene_model"
     temp_use_mockup = False
     if sex_or_unit in ["male", "female", "any"]:
-        matched_model = config["gene_models"][gene_model][sex]
+        matched_model = config["gene_models"][gene_model][sex_or_unit]
     elif sex_or_unit not in ASSEMBLY_UNITS_SEX_SPECIFIC:
         # other parts of the assembly that do not include
         # any of the sex chromosomes
