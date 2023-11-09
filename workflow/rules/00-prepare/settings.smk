@@ -26,8 +26,10 @@ for asm_unit, thresholds in config.get("sequence_length_thresholds_assembly", di
         continue
     elif asm_unit.startswith("contaminants"):
         lookup_name = asm_unit
-    elif asm_unit.startswith("asm"):
+    elif asm_unit.startswith("asm-"):
         lookup_name = asm_unit
+    elif asm_unit.startswith("asm_"):
+        lookup_name = asm_unit.replace("_", "-")
     else:
         lookup_name = f"asm-{asm_unit}"
     SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY[lookup_name] = thresholds
@@ -42,9 +44,12 @@ ASSEMBLY_UNITS_NO_CONTAM = sorted(k for k in SEQUENCE_LENGTH_THRESHOLDS_ASSEMBLY
 ASSEMBLY_UNITS_SEX_SPECIFIC = []
 for asm_unit in config.get("sex_specific_assembly_units", []):
     if asm_unit.startswith("asm_"):
+        lookup_name = asm_unit.replace("_", "-")
+        ASSEMBLY_UNITS_SEX_SPECIFIC.append(lookup_name)
+    elif asm_unit.startswith("asm-"):
         ASSEMBLY_UNITS_SEX_SPECIFIC.append(asm_unit)
     else:
-        lookup_name = f"asm_{asm_unit}"
+        lookup_name = f"asm-{asm_unit}"
         if lookup_name not in ASSEMBLY_UNITS_PLUS_CONTAM:
             logerr(f"Name of sex-specific assembly unit seems to be malformed: {asm_unit} / {lookup_name}")
             raise ValueError("Name of assembly units must be 'asm_NAME' (NAME all lowercase characters).")
