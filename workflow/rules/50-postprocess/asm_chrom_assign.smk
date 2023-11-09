@@ -27,25 +27,25 @@ rule run_chromosome_assignments:
     input:
         tsv_query = expand(
             rules.estimate_chromosome_assignment.output.tsv_query,
-            ref=["t2tv2"],
+            refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
             asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
         tsv_target = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
-            ref=["t2tv2"],
+            refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
             asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
         ),
         tsv_qry_rdna = expand(
             rules.estimate_chromosome_assignment.output.tsv_query,
-            ref=["t2tv2"],
+            refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
             asm_unit=["asm-rdna"],
         ),
         tsv_trg_rdna = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
-            ref=["t2tv2"],
+            refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
             asm_unit=["asm-rdna"],
         )
