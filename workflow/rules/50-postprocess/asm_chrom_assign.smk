@@ -5,11 +5,11 @@ rule estimate_chromosome_assignment:
     output:
         tsv_query = DIR_RES.joinpath(
             "reports", "ref_chrom_assign",
-            "{sample}.{asm_unit}.{ref}.chrom-assign-by-query.tsv"
+            "{sample}.{asm_unit}.{refgenome}.chrom-assign-by-query.tsv"
         ),
         tsv_target = DIR_RES.joinpath(
             "reports", "ref_chrom_assign",
-            "{sample}.{asm_unit}.{ref}.chrom-assign-by-target.tsv"
+            "{sample}.{asm_unit}.{refgenome}.chrom-assign-by-target.tsv"
         )
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
