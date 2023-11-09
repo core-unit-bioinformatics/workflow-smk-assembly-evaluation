@@ -6,6 +6,7 @@ def create_mockup(file_path, caller):
 
     mock_name = pathlib.Path(file_path).name
     mock_path = DIR_LOCAL_REF.joinpath("mocks", mock_name)
+    mock_path.parent.mkdir(exist_ok=True, parents=True)
     with open(mock_path, "w") as mock:
         _ = mock.write(f"{caller}\n{get_timestamp()}\n")
     return mock_path
