@@ -42,15 +42,15 @@ rule estimate_asm_unit_karyotype:
             assert tsv_ext == "tsv"
             if FORCE_ANNOTATED_SAMPLE_SEX:
                 karyotype = SAMPLE_INFOS[sample]["sex"]
-                out_records.append((sample, asm_unit, refgenome, karyotype, -1, -1, -1, -1))
+                out_records.append((sample, asm_unit, refgenome, karyotype, -1, -1, -1, -1, -1, -1))
                 continue
             if force_assign_any:
                 karyotype = "any"
-                out_records.append((sample, asm_unit, refgenome, karyotype, -1, -1, -1, -1))
+                out_records.append((sample, asm_unit, refgenome, karyotype, -1, -1, -1, -1, -1, -1))
                 continue
             df = pd.read_csv(tsv_file, sep="\t", header=0, comment="#")
-            female_score, female_frag = compute_karyotype_score(df, sex_chromosomes["female"])
-            male_score, male_frag = compute_karyotype_score(df, sex_chromosomes["male"])
+            female_score, female_frag, female_contigs = compute_karyotype_score(df, sex_chromosomes["female"])
+            male_score, male_frag, male_contigs = compute_karyotype_score(df, sex_chromosomes["male"])
             if female_score > male_score:
                 karyotype = "female"
             elif male_score > female_score:
@@ -68,14 +68,15 @@ rule estimate_asm_unit_karyotype:
                 karyotype = "any"
             out_records.append(
                 (sample, asm_unit, refgenome, karyotype,
-                female_score, female_frag, male_score, male_frag)
+                female_score, female_frag, female_contigs,
+                male_score, male_frag, male_contigs)
             )
 
         out_records = pd.DataFrame.from_records(out_records,
             columns=[
                 "sample", "asm_unit", "refgenome", "karyotype",
-                "female_score", "female_fragmentation",
-                "male_score", "male_fragmentation"
+                "female_score", "female_fragmentation", "female_contigs",
+                "male_score", "male_fragmentation", "male_contigs"
             ]
         )
         out_records.sort_values("asm_unit", inplace=True)

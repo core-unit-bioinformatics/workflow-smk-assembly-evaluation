@@ -13,8 +13,10 @@ def compute_karyotype_score(chrom_assign_table, karyo_chroms):
     if subset.empty:
         karyo_score = 0
         karyo_fragmentation = 0
+        karyo_contigs = 0
     else:
         karyo_score = int(subset["align_matching"].sum())
         karyo_fragmentation = int(subset["align_num"].sum())
-    return karyo_score, karyo_fragmentation
+        karyo_contigs = int(subset["query_name"].unique())
+    return karyo_score, karyo_fragmentation, karyo_contigs
 
