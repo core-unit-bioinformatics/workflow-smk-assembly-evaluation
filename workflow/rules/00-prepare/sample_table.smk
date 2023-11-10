@@ -7,11 +7,19 @@ import pandas
 
 SAMPLES = None
 SAMPLE_INFOS = None
+SAMPLE_SHEET_ID = None
 
 
 def process_sample_sheet():
 
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
+
+    sample_sheet_name = SAMPLE_SHEET_FILE.stem
+    sample_sheet_content = open(SAMPLE_SHEET_FILE, "rb").read()
+    sample_sheet_md5 = hashlib.md5(sample_sheet_content).hexdigest()
+    global SAMPLE_SHEET_ID
+    SAMPLE_SHEET_ID = f"{sample_sheet_name}.{sample_sheet_md5[:8]}"
+
     SAMPLE_SHEET = pandas.read_csv(
         SAMPLE_SHEET_FILE,
         sep="\t",

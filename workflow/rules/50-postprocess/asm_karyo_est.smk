@@ -92,9 +92,10 @@ rule build_assembly_karyotype_summary:
             refgenome=COMPLETE_REF_GENOME
         )
     output:
-        tsv = DIR_RES.joinpath(
-            "reports", "ref_chrom_assign",
-            "all-samples.karyo-est.tsv"
+        tsv = expand(
+            DIR_RES.joinpath(
+                "reports", "ref_chrom_assign", "{sample_sheet_id}.karyo-est.tsv"),
+                sample_sheet_id=SAMPLE_SHEET_ID
         )
     run:
         import pandas as pd
@@ -103,6 +104,7 @@ rule build_assembly_karyotype_summary:
         for tsv_file in input.all_est:
             merged.append(pd.read_csv(tsv_file, sep="\t", header=0))
         merged = pd.concat(merged, axis=0, ignore_index=False)
+        merged["sample_sex"] = merged["sample"].apply(lambda sample: SAMPLE_INFOS[sample]["sex"])
         merged.sort_values(["sample", "asm_unit"], inplace=True)
         merged.to_csv(output.tsv, sep="\t", header=True, index=False)
 
