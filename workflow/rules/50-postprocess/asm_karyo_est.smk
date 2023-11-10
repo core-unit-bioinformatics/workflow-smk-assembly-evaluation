@@ -67,7 +67,7 @@ rule estimate_asm_unit_karyotype:
                 logerr(f"All karyotype scores are zero - check the alignments? Assigning karyotype 'any'.")
                 karyotype = "any"
             out_records.append(
-                (sample, asm_unit, ref, karyotype,
+                (sample, asm_unit, refgenome, karyotype,
                 female_score, female_frag, male_score, male_frag)
             )
 
