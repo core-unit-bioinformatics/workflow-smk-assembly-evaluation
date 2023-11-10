@@ -107,5 +107,5 @@ rule build_assembly_karyotype_summary:
         merged = pd.concat(merged, axis=0, ignore_index=False)
         merged["sample_sex"] = merged["sample"].apply(lambda sample: SAMPLE_INFOS[sample]["sex"])
         merged.sort_values(["sample", "asm_unit"], inplace=True)
-        merged.to_csv(output.tsv, sep="\t", header=True, index=False)
+        merged.to_csv(output.tsv[0], sep="\t", header=True, index=False)
 
