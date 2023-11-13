@@ -87,7 +87,7 @@ rule asm_completeness_genemodel:
             allow_missing=True
         ),
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
-        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, wildcards.sample, None, wildcards.asm_unit)
+        cdna = lambda wildcards: get_gene_model(wildcards.genemodel, wildcards.sample, COMPLETE_REF_GENOME, wildcards.asm_unit)
     output:
         paf = DIR_PROC.joinpath(
             "75-completeness", "asmgene",
