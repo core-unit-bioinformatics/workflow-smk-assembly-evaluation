@@ -72,7 +72,7 @@ def get_reference_gene_model_alignment(gene_model, sample, refgenome, asm_unit):
         # to make this an explicit failure
         matched_alignment = f"{sample}-{asm_unit}-{refgenome}-no-karyotype.mock"
         temp_use_mockup = True
-    elif not pathlib.Path(karyo_est_file).is_file():
+    elif asm_unit not in ASSEMBLY_UNITS_SEX_SPECIFIC:
         # some other assembly unit / not sex-specific - just use 'any' here
         match_alignment_fmt = {"refgenome": refgenome, "genemodel": gene_model}
         matched_alignment = str(rules.ref_completeness_genemodel_any.output.paf)
