@@ -16,7 +16,7 @@ def load_karyotype_estimate(karyo_est_file, sample, asm_unit):
 
     df = pandas.read_csv(karyo_est_file, sep="\t", header=0)
     select_unit = df["asm_unit"] == asm_unit
-    assert select_unit == 1
+    assert select_unit.sum() == 1
     karyotype = df.loc[select_unit, "karyotype"].values[0]
     assert karyotype in ["male", "female", "any"]
     return karyotype
