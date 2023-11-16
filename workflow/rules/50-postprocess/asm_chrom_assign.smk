@@ -29,24 +29,11 @@ rule run_chromosome_assignments:
             rules.estimate_chromosome_assignment.output.tsv_query,
             refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
-            asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
         ),
         tsv_target = expand(
             rules.estimate_chromosome_assignment.output.tsv_target,
             refgenome=COMPLETE_REF_GENOME,
             sample=SAMPLES,
-            asm_unit=[f"asm-{asm_unit}" for asm_unit in ["hap1", "hap2", "unassigned", "disconnected"]],
-        ),
-        tsv_qry_rdna = expand(
-            rules.estimate_chromosome_assignment.output.tsv_query,
-            refgenome=COMPLETE_REF_GENOME,
-            sample=SAMPLES,
-            asm_unit=["asm-rdna"],
-        ),
-        tsv_trg_rdna = expand(
-            rules.estimate_chromosome_assignment.output.tsv_target,
-            refgenome=COMPLETE_REF_GENOME,
-            sample=SAMPLES,
-            asm_unit=["asm-rdna"],
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
         )
-
