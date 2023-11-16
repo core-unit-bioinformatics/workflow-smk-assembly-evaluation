@@ -80,6 +80,12 @@ rule ref_completeness_genemodel_male:
 
 
 rule asm_completeness_genemodel:
+    """
+    NB: the global variable COMPLETE_REF_GENOME is used
+    here to avoid adding a new wildcard ("refgenome") that
+    is not directly related to the gene model to assembly
+    alignment.
+    """
     input:
         asm_karyo = expand(
             rules.estimate_asm_unit_karyotype.output.karyo_est,
