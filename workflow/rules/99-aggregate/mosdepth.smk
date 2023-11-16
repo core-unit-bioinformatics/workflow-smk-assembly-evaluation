@@ -4,10 +4,10 @@ MOSDEPTH_OUTPUT = []
 if RUN_MOSDEPTH and RUN_MOSDEPTH_ASSM_REF_COV:
 
     MOSDEPTH_OUTPUT.extend(
-        rules.mosdepth_assembly_reference_coverage_window.input.windowed
+        rules.run_assembly_reference_coverage.input.windowed
     )
     MOSDEPTH_OUTPUT.extend(
-        rules.mosdepth_assembly_reference_coverage_window.input.merged
+        rules.run_assembly_reference_coverage.input.merged
     )
 
 if RUN_MOSDEPTH and RUN_MOSDEPTH_ASSM_READ_COV:
