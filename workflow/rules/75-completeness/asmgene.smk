@@ -144,6 +144,27 @@ rule asm_completeness_asmgene_stats:
         "paftools.js asmgene -e {input.ref} {input.assm} > {output.stats}"
 
 
+rule asm_completeness_asmgene_process_output:
+    input:
+        txt = rules.asm_completeness_asmgene_stats.output.stats
+    output:
+        issues = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.{asm_unit}.{refgenome}.{genemodel}.asmgene-issues.bed"
+        ),
+        stats = DIR_RES.joinpath(
+            "statistics", "completeness", "asmgene",
+            "{sample}.{asm_unit}.{refgenome}.{genemodel}.asmgene-stats.tsv"
+        )
+    conda:
+        DIR_ENVS.joinpath("pyseq.yaml")
+    params:
+        script=find_script("split_asmgene_stats")
+    shell:
+        "{params.script} --input {input.txt} "
+        "--bed-issues {output.issues} --stats-out {output.stats}"
+
+
 rule run_all_asm_completeness_asmgene:
     input:
         asmgene_stats = expand(
@@ -153,4 +174,11 @@ rule run_all_asm_completeness_asmgene:
             refgenome=COMPLETE_REF_GENOME,
             genemodel=WILDCARDS_GENE_MODELS
         ),
-        karyotypes = rules.build_assembly_karyotype_summary.output.tsv
+        karyotypes = rules.build_assembly_karyotype_summary.output.tsv,
+        agg_stats = expand(
+            rules.asm_completeness_asmgene_process_output.output.stats,
+            sample=SAMPLES,
+            asm_unit=ASSEMBLY_UNITS_SEX_SPECIFIC,
+            refgenome=COMPLETE_REF_GENOME,
+            genemodel=WILDCARDS_GENE_MODELS
+        )
