@@ -92,8 +92,11 @@ def get_reference_gene_model_alignment(gene_model, sample, refgenome, asm_unit):
     return matched_alignment
 
 
-def get_reference_genome(refgenome):
+def get_reference_genome(refgenome, sex="any"):
 
-    matched_ref = config["refgenomes"][refgenome]["any"]
+    try:
+        matched_ref = config["refgenomes"][refgenome][sex]
+    except KeyError:
+        matched_ref = config["refgenomes"][refgenome]["any"]
     ref_path = DIR_GLOBAL_REF.joinpath(matched_ref)
     return ref_path

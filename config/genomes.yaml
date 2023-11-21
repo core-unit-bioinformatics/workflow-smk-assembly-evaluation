@@ -6,7 +6,9 @@ refgenomes:
     any: GRCh38_HGSVC2_noalt.fasta
   t2tv2:
     male: chm13v2.0.fasta
+    male-hap: chm13v2.0.male-hap.fasta
     female: chm13v2.0_maskedY.fasta
+    female-hap: chm13v2.0.female-hap.fasta
     any: chm13v2.0.fasta
 
 complete_reference: t2tv2

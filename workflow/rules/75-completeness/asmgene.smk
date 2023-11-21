@@ -39,7 +39,7 @@ rule ref_completeness_genemodel_any:
 
 rule ref_completeness_genemodel_female:
     input:
-        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
+        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome, "female-hap"),
         cdna = lambda wildcards: get_gene_model(wildcards.genemodel, None, wildcards.refgenome, "female")
     output:
         paf = DIR_PROC.joinpath(
@@ -60,7 +60,7 @@ rule ref_completeness_genemodel_female:
 
 rule ref_completeness_genemodel_male:
     input:
-        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome),
+        fasta = lambda wildcards: get_reference_genome(wildcards.refgenome, "male-hap"),
         cdna = lambda wildcards: get_gene_model(wildcards.genemodel, None, wildcards.refgenome, "male")
     output:
         paf = DIR_PROC.joinpath(
