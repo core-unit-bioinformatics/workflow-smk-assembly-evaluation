@@ -2,7 +2,6 @@
 rule repeatmasker_assembly_run:
     """
     TODO: hard-coded default for human - make parameter
-    TODO: unify wildcard naming - asm_unit == asm_unit
     TODO: uses default RepeatMasker library - has to be downloaded manually
     and copied into the respective Conda env --- no offline deployment possible!
     see: github.com/rmhubley/RepeatMasker/issues/233
