@@ -60,15 +60,21 @@ def main():
                     )
 
     bed_columns = ["contig", "start", "end", "name", "length"]
-    df = pd.DataFrame.from_records(
-        bed_ngaps, columns=bed_columns
-    )
-    df.sort_values(["contig", "start"], inplace=True)
-
     args.output.parent.mkdir(exist_ok=True, parents=True)
-    with open(args.output, "w") as bed:
-        _ = bed.write("#")
-        df.to_csv(bed, sep="\t", header=True, index=False)
+
+    if not bed_ngaps:
+        with open(args.output, "w") as bed:
+            _ = bed.write("#")
+            _ = bed.write("\t".join(bed_columns) + "\n")
+    else:
+        df = pd.DataFrame.from_records(
+            bed_ngaps, columns=bed_columns
+        )
+        df.sort_values(["contig", "start"], inplace=True)
+
+        with open(args.output, "w") as bed:
+            _ = bed.write("#")
+            df.to_csv(bed, sep="\t", header=True, index=False)
 
     return 0
 
