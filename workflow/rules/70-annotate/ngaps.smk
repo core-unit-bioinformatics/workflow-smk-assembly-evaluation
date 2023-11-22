@@ -20,3 +20,11 @@ rule generate_ngaps_annotation:
     shell:
         "{params.script} --fasta-input {input.asm_units} "
         "--output {output.bed} --name {wildcards.sample}"
+
+
+rule run_all_ngaps_annotation:
+    input:
+        beds = expand(
+            rules.generate_ngaps_annotation.output.bed,
+            sample=SAMPLES
+        )
