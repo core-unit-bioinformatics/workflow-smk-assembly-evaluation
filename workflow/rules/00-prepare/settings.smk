@@ -4,6 +4,10 @@ PATH_ID_LENGTH = 8
 DATA_ROOT = config.get("data_root", "/")
 DATA_ROOT = pathlib.Path(DATA_ROOT).resolve(strict=True)
 
+CONTAINER_STORE = config.get("container_store", "/")
+CONTAINER_STORE = pathlib.Path(CONTAINER_STORE).resolve(strict=True)
+
+
 WILDCARDS_REF_GENOMES = list(config.get("refgenomes", dict()).keys())
 if not WILDCARDS_REF_GENOMES:
     logerr("No reference genomes specified in config - entry 'refgenomes' is missing?")
