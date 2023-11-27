@@ -96,7 +96,7 @@ rule normalize_repeatmasker_table:
             "{sample}.{asm_unit}.repmask.matches.tsv.gz"
         ),
     resources:
-        mem_mb = lambda wildcards, attempt: 1024 * attempt
+        mem_mb = lambda wildcards, attempt: 2048 * attempt
     run:
         import gzip
         import pandas as pd
