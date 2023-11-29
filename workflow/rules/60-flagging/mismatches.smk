@@ -41,7 +41,7 @@ rule deepvariant_read_assm_alignments:
         f"{CONTAINER_STORE}/{config['deepvariant']}"
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, attempt: 24576 + 16384 * attempt,
+        mem_mb = lambda wildcards, attempt: 24576 + 24576 * attempt,
         time_hrs = lambda wildcards, attempt: 11 * attempt,
         arch=":arch=skylake"  # docker default built with AVX512
     params:
