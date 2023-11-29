@@ -18,7 +18,7 @@ rule repeatmasker_assembly_run:
                 "{sample}.{asm_unit}.repmask.wd",
                 "{sample}.{asm_unit}.repmask.tmp.fa"
             )),
-            ".cat.gz", ".masked", ".out", ".tbl"
+            ".masked", ".out", ".tbl"
         )
     log:
         DIR_LOG.joinpath(
@@ -49,6 +49,16 @@ rule repeatmasker_assembly_run:
 
 
 rule collect_repeatmasker_output:
+    """DEBUG / FIX 2023-11-29
+    It seems like RepeatMasker is only gzipping the ".cat"
+    output file if it is larger than some threshold, or
+    otherwise failing w/o proper signalling. In any case,
+    the workflow cannot complete for a subset of runs if
+    the file ".cat.gz" is an expected output. Hence, this
+    rule now compensates for that total headache and searches
+    for ".cat" or ".cat.gz" in the output folder of the
+    RepeatMasker run and adds that file to the tar output.
+    """
     input:
         repmask_files = rules.repeatmasker_assembly_run.output.repmask_out
     output:
@@ -69,6 +79,16 @@ rule collect_repeatmasker_output:
                 tar_cmd += f"{tar_dir} "
             filename = pl.Path(filepath).name
             tar_cmd += f"./{filename} "
+        # see docstring above for the following stunt ...
+        cat_output = list(tar_dir.glob("*.cat*"))
+        if len(cat_output) != 1:
+            raise RuntimeError(
+                f"Incomplete RepeatMasker run for {tar_dir} - '.cat*' output missing."
+            )
+        else:
+            cat_output = cat_output[0]
+            cat_output_filename = cat_output.name
+            tar_cmd += f"./{cat_output_filename}"
         try:
             _ = sp.check_output(tar_cmd, shell=True)
         except sp.CalledProcessError as spe:
