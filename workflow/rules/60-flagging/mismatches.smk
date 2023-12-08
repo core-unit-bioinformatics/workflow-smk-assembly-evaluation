@@ -63,7 +63,7 @@ rule apply_basic_quality_filter:
             "{sample}.asmerr-{read_type}-{aln_subset}.dv-wg.vcf.gz.tbi"
         )
     conda:
-        DIR_ENVS.joinpath("vcftools.yaml")
+        DIR_ENVS.joinpath("biotools", "vcftools.yaml")
     shell:
         "bcftools view -f PASS -i FORMAT/DP>=5 --output-type v {input.vcf} "
             " | "
