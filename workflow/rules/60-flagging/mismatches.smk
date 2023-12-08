@@ -65,7 +65,7 @@ rule apply_basic_quality_filter:
     conda:
         DIR_ENVS.joinpath("biotools", "vcftools.yaml")
     shell:
-        "bcftools view -f PASS -i FORMAT/DP>=5 --output-type v {input.vcf} "
+        "bcftools view -f PASS -i 'FORMAT/DP>=5' --output-type v {input.vcf} "
             " | "
         "sed -f {input.tag_to_untag}"
             " | "
