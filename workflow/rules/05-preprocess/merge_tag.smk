@@ -62,6 +62,52 @@ rule merge_and_tag_asm_units:
             "--report --buffer-size {params.buffer} --output {output.mrg_fasta} 2> {log}"
 
 
+rule index_merged_tagged_assembly_fasta:
+    input:
+        mrg_fasta = rules.merge_and_tag_asm_units.output.mrg_fasta
+    output:
+        fai = DIR_PROC.joinpath(
+            "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.fasta.fai"
+        )
+    conda:
+        DIR_ENVS.joinpath("biotools", "utils.yaml")
+    shell:
+        "samtools faidx {input.mrg_fasta}"
+
+
+localrules: create_sed_replacement_files
+rule create_sed_replacement_files:
+    input:
+        fai = rules.index_merged_tagged_assembly_fasta.output.fai
+    output:
+        tag_to_untag = DIR_RES.joinpath(
+            "auxiliary", "contig_renaming",
+            "{sample}.mrg-asm.tagged-to-untagged.sed"
+        ),
+        untag_to_tag = DIR_RES.joinpath(
+            "auxiliary", "contig_renaming",
+            "{sample}.mrg-asm.untagged-to-tagged.sed"
+        )
+    run:
+        import contextlib as ctl
+
+        with ctl.ExitStack() as exs:
+            fai_file = exs.enter_context(open(input.fai, "r"))
+            out_tag_to_untag = exs.enter_context(open(output.tag_to_untag, "w"))
+            out_untag_to_tag = exs.enter_context(open(output.untag_to_tag, "w"))
+
+            for line in fai_file:
+                tagged_seq = line.strip().split()[0]
+                untagged_seq = tagged_seq.rsplit(".", 1)[0]
+                _ = out_tag_to_untag.write(
+                    f"s/{tagged_seq}/{untagged_seq}/g\n"
+                )
+                _ = out_untag_to_tag.write(
+                    f"s/{untagged_seq}/{tagged_seq}/g\n"
+                )
+    # END OF RUN BLOCK
+
+
 rule run_merge_tag_all_assemblies:
     input:
         mrg_fasta = expand(

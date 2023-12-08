@@ -1,20 +1,5 @@
 
 
-rule index_merged_tagged_assembly_fasta:
-    input:
-        mrg_fasta = DIR_PROC.joinpath(
-            "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.fasta"
-        )
-    output:
-        fai = DIR_PROC.joinpath(
-            "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.fasta.fai"
-        )
-    conda:
-        DIR_ENVS.joinpath("biotools", "utils.yaml")
-    shell:
-        "samtools faidx {input.mrg_fasta}"
-
-
 rule deepvariant_read_assm_alignments:
     input:
         assm = rules.merge_and_tag_asm_units.output.mrg_fasta,
@@ -64,10 +49,42 @@ rule deepvariant_read_assm_alignments:
         "rm -rfd {params.tempdir}"
 
 
+rule apply_basic_quality_filter:
+    input:
+        vcf = rules.deepvariant_read_assm_alignments.output.vcfgz,
+        tag_to_untag = rules.create_sed_replacement_files.output.tag_to_untag
+    output:
+        vcf = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.asmerr-{read_type}-{aln_subset}.dv-wg.vcf.gz"
+        ),
+        tbi = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.asmerr-{read_type}-{aln_subset}.dv-wg.vcf.gz.tbi"
+        )
+    conda:
+        DIR_ENVS.joinpath("vcftools.yaml")
+    shell:
+        "bcftools view -f PASS -i FORMAT/DP>=5 --output-type v {input.vcf} "
+            " | "
+        "sed -f {input.tag_to_untag}"
+            " | "
+        "bgzip > {output.vcf}"
+            " && "
+        "tabix --force --preset vcf {output.vcf}"
+
+
+# rule compute_qv_estimate_mismatches:
+#     input:
+#         vcf = rules.apply_basic_quality_filter.output.vcf,
+#         tbi = rules.apply_basic_quality_filter.output.tbi
+#     output:
+
+
 rule run_all_deepvariant_hifi_mismatches:
     input:
         vcf = expand(
-            rules.deepvariant_read_assm_alignments.output.vcfgz,
+            rules.apply_basic_quality_filter.output.vcf,
             sample=SAMPLES,
             read_type=["hifi"],
             aln_subset=["onlyPRI"]
