@@ -74,17 +74,27 @@ rule apply_basic_quality_filter:
         "tabix --force --preset vcf {output.vcf}"
 
 
-# rule compute_qv_estimate_mismatches:
-#     input:
-#         vcf = rules.apply_basic_quality_filter.output.vcf,
-#         tbi = rules.apply_basic_quality_filter.output.tbi
-#     output:
+rule compute_qv_estimate_mismatches:
+    input:
+        vcf = rules.apply_basic_quality_filter.output.vcf,
+        tbi = rules.apply_basic_quality_filter.output.tbi
+    output:
+        tsv = DIR_RES.joinpath(
+            "statistics", "qv_estimates",
+            "{sample}.QVest-{read_type}-{aln_subset}.dv-wg.tsv"
+        )
+    conda:
+        DIR_ENVS.joinpath("pyseq.yaml")
+    params:
+        script=find_script("compute_qv")
+    shell:
+        "{params.script} --input {input.vcf} --output {output.tsv}"
 
 
 rule run_all_deepvariant_hifi_mismatches:
     input:
         vcf = expand(
-            rules.apply_basic_quality_filter.output.vcf,
+            rules.compute_qv_estimate_mismatches.output.tsv,
             sample=SAMPLES,
             read_type=["hifi"],
             aln_subset=["onlyPRI"]
