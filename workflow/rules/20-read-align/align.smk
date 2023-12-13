@@ -29,10 +29,11 @@ rule align_reads_to_complete_assembly:
     threads: CPU_HIGH
     resources:
         mem_mb = lambda wildcards, attempt: {
-            "hifi": 65536 + 8192 * attempt,
+            "hifi": 65536 + 24576 * attempt,
             "ont": 65536 + 49152 * attempt
         }[wildcards.read_type],
-        # TODO: change runtime to input_size dep; Revio data much larger than SQII
+        # TODO: change runtime and mem_mb to input_size dep
+        # Revio data much larger than SQII
         time_hrs = lambda wildcards, attempt: {
             "hifi": attempt ** 4,
             "ont": 47 * attempt
