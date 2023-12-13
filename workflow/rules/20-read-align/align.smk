@@ -32,8 +32,9 @@ rule align_reads_to_complete_assembly:
             "hifi": 65536 + 8192 * attempt,
             "ont": 65536 + 49152 * attempt
         }[wildcards.read_type],
+        # TODO: change runtime to input_size dep; Revio data much larger than SQII
         time_hrs = lambda wildcards, attempt: {
-            "hifi": attempt * attempt,
+            "hifi": attempt ** 4,
             "ont": 47 * attempt
         }[wildcards.read_type],
         sort_mem_mb = lambda wildcards, attempt: 2048 + 2048 * attempt
