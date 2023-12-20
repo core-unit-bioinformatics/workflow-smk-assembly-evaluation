@@ -13,7 +13,7 @@ def get_repeatmasker_run_memory_mb(input_size_mb, compressed=False):
     if input_size_mb < threshold_tiny * compression_scaling:
         mem_mb = 4096
     elif input_size_mb < threshold_small * compression_scaling:
-        mem_mb = 16384
+        mem_mb = 24576
     elif input_size_mb < threshold_normal * compression_scaling:
         mem_mb = 98304
     else:
@@ -53,7 +53,7 @@ def hmmer_scaling(resource, motif_name):
     return scaling_factor
 
 
-def hmmer_threshold_hard_filter(threshold, motif_name):
+def hmmer_threshold_value(threshold, motif_name):
 
     # defaults as per HMMER cli interface
     _DEFAULT_HMMER_EVALUE = "10"
@@ -63,20 +63,11 @@ def hmmer_threshold_hard_filter(threshold, motif_name):
 
     t_value = None
     if threshold in ["evalue", "evalue_t"]:
-        # if a hard filter is set, then use the user-specified threshold
-        # value to omit reporting hits failing that threshold;
-        # otherwise, use (lenient) HMMER defaults
-        if HMMER_EVALUE_T_HARD_FILTER:
-            t_value = HMMER_MOTIF_SEARCH[motif_name].get("evalue_t", _DEFAULT_HMMER_EVALUE)
-        else:
-            t_value = _DEFAULT_HMMER_EVALUE
+        # NB: only the E-value threshold is used in the HMMER call
+        t_value = HMMER_MOTIF_SEARCH[motif_name].get("evalue_t", _DEFAULT_HMMER_EVALUE)
 
     if threshold in ["score", "score_t"]:
-        if HMMER_SCORE_T_HARD_FILTER:
-            t_value = HMMER_MOTIF_SEARCH[motif_name].get("score_t", _DEFAULT_HMMER_EVALUE)
-        else:
-            t_value = _DEFAULT_HMMER_SCORE
-
+        t_value = HMMER_MOTIF_SEARCH[motif_name].get("score_t", _DEFAULT_HMMER_EVALUE)
 
     assert t_value is not None
 

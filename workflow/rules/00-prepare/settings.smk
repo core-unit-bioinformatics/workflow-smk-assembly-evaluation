@@ -146,6 +146,3 @@ if RUN_NCBI_FCS_GX:
 
 HMMER_MOTIF_SEARCH = config.get("hmmer_motif_search", dict())
 HMMER_MOTIF_NAMES = sorted(HMMER_MOTIF_SEARCH.keys())
-
-HMMER_EVALUE_T_HARD_FILTER = config.get("hmmer_evalue_t_hard_filter", True)
-HMMER_SCORE_T_HARD_FILTER = config.get("hmmer_score_t_hard_filter", True)

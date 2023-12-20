@@ -36,10 +36,10 @@ repeatmasker_species: human
 
 # Options controlling reporting thresholds:
 #  -E <x> : report sequences <= this E-value threshold in output  [10.0]  (x>0)
+### >>> the evalue_t threshold will be used to limit the output of HMMER
 #  -T <x> : report sequences >= this score threshold in output
-hmmer_evalue_t_hard_filter: True
-hmmer_score_t_hard_filter: False
-
+### >>> the score_t threshold will be used to label hits above this threshold as high-quality
+### >>> in a postprocessing step, i.e. the score threshold is not used in the call to HMMER
 hmmer_motif_search:
   DYZ18_Yq:
     score_t: 2100

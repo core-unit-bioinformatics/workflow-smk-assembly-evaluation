@@ -1,5 +1,13 @@
 
 rule hmmer_motif_search:
+    """NB: the reported hits can EITHER
+    be thresholded on the E-value [-E] OR
+    on the score [-T], but not both in the same run.
+    The implementation here only thresholds on
+    the E-value (if specified for the motif) and
+    then later labels hits above the score threshold
+    (if specified for the motif) as high-quality
+    """
     input:
         asm_unit = rules.create_plain_assembly_file.output.tmp_fa,
         motif = DIR_GLOBAL_REF.joinpath("{motif}.fasta")
@@ -31,13 +39,12 @@ rule hmmer_motif_search:
         mem_mb = lambda wildcards, attempt: (24576 + 24576 * attempt) * hmmer_scaling("mem", wildcards.motif),
         time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
     params:
-        evalue_t = lambda wildcards: hmmer_threshold_hard_filter("evalue_t", wildcards.motif),
-        score_t = lambda wildcards: hmmer_threshold_hard_filter("score_t", wildcards.motif),
+        evalue_t = lambda wildcards: hmmer_threshold_value("evalue_t", wildcards.motif),
         nhmmer_exec = config.get("nhmmer_exec", "nhmmer")
     shell:
         "{params.nhmmer_exec} --cpu {threads} --dna "
         "-o {output.txt} --tblout {output.table} "
-        "-E {params.evalue_t} -T {params.score_t} "
+        "-E {params.evalue_t} "
         "{input.motif} {input.asm_unit} &> {log}"
 
 
