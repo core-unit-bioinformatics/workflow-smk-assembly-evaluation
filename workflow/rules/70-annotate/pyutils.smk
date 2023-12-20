@@ -63,16 +63,20 @@ def hmmer_threshold_hard_filter(threshold, motif_name):
 
     t_value = None
     if threshold in ["evalue", "evalue_t"]:
+        # if a hard filter is set, then use the user-specified threshold
+        # value to omit reporting hits failing that threshold;
+        # otherwise, use (lenient) HMMER defaults
         if HMMER_EVALUE_T_HARD_FILTER:
-            t_value = _DEFAULT_HMMER_EVALUE
-        else:
             t_value = HMMER_MOTIF_SEARCH[motif_name].get("evalue_t", _DEFAULT_HMMER_EVALUE)
+        else:
+            t_value = _DEFAULT_HMMER_EVALUE
 
     if threshold in ["score", "score_t"]:
         if HMMER_SCORE_T_HARD_FILTER:
-            t_value = _DEFAULT_HMMER_SCORE
-        else:
             t_value = HMMER_MOTIF_SEARCH[motif_name].get("score_t", _DEFAULT_HMMER_EVALUE)
+        else:
+            t_value = _DEFAULT_HMMER_SCORE
+
 
     assert t_value is not None
 
