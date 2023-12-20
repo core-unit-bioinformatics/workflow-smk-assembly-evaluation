@@ -1,16 +1,42 @@
 
-rule repeatmasker_assembly_run:
-    """
-    TODO: hard-coded default for human - make parameter
-    TODO: uses default RepeatMasker library - has to be downloaded manually
-    and copied into the respective Conda env --- no offline deployment possible!
-    see: github.com/rmhubley/RepeatMasker/issues/233
+rule create_plain_assembly_file:
+    """ 2023-12-19
+    This rule was added to switch to the Dfam TE Tools
+    container for RepeatMasker and HMMER/nhmmer (see module).
+    as the default due to the possibility of a stable
+    offline deployment (default Dfam database included).
+    https://github.com/Dfam-consortium/TETools
 
-    NB: RepeatMasker cannot process compressed files, but the
-    main process does not abort, just the I/O part seems to die
+    This rule simply decouples unzipping the fasta file
+    and can thus make use of Snakemake's temp() wrapper.
     """
     input:
         fasta = rules.compress_clean_assembly_sequences.output.fagz,
+    output:
+        tmp_fa = temp(
+            str(DIR_PROC.joinpath(
+                "70-annotate", "repeatmasker",
+                "{sample}.{asm_unit}.repmask.tmp.fa"
+            ))
+        )
+    resources:
+        time_hrs=lambda wildcards, attempt: attempt * attempt
+    shell:
+        "gzip -dc {input.fasta} > {output.tmp_fa}"
+
+
+rule repeatmasker_assembly_run:
+    """
+    Uses default RepeatMasker library and is designed
+    for the TE tool container (see unzip rule above).
+    cf.: github.com/rmhubley/RepeatMasker/issues/233
+
+    NB: RepeatMasker cannot process compressed files, but the
+    main process does not abort, just the I/O part seems to die.
+    Hence the unzip rule above.
+    """
+    input:
+        fasta = rules.create_plain_assembly_file.output.tmp_fa
     output:
         repmask_out = multiext(
             str(DIR_PROC.joinpath(
@@ -30,22 +56,18 @@ rule repeatmasker_assembly_run:
             "70-annotate", "repeatmasker",
             "{sample}.{asm_unit}.repmask.rsrc"
         )
-    conda:
-        DIR_ENVS.joinpath("biotools", "motifs.yaml")
+    container:
+        f"{CONTAINER_STORE}/{config['repeatmasker']}"
     threads: CPU_MEDIUM
     resources:
         mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
         time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.repmask_out[0]).parent,
-        unzip_tmp = lambda wildcards, output: pathlib.Path(output.repmask_out[0]).parent.with_suffix(".tmp.fa"),
+        species = config.get("repeatmasker_species", "human")
     shell:
-        "pigz -p {threads} -d -c {input.fasta} > {params.unzip_tmp}"
-            " && "
         "RepeatMasker -pa {threads} -s -dir {params.out_dir} "
-        "-species human {params.unzip_tmp} &> {log}"
-            " ; "
-        "rm -f {params.unzip_tmp}"
+        "-species {params.species} {input} &> {log}"
 
 
 rule collect_repeatmasker_output:

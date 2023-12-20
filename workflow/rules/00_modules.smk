@@ -34,6 +34,7 @@ include: "60-flagging/mismatches.smk"
 
 include: "70-annotate/pyutils.smk"
 include: "70-annotate/repeatmasker.smk"
+include: "70-annotate/hmmer.smk"
 include: "70-annotate/ngaps.smk"
 
 include: "75-completeness/pyutils.smk"

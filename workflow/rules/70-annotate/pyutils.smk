@@ -41,3 +41,39 @@ def get_repeatmasker_run_time_hrs(input_size_mb, compressed=False):
     else:
         time_hrs = 84
     return time_hrs
+
+
+def hmmer_scaling(resource, motif_name):
+
+    assert resource in ["cpu", "mem", "time"]
+    try:
+        scaling_factor = int(HMMER_MOTIF_SEARCH[motif_name][f"scale_{resource}"])
+    except KeyError:
+        scaling_factor = 1
+    return scaling_factor
+
+
+def hmmer_threshold_hard_filter(threshold, motif_name):
+
+    # defaults as per HMMER cli interface
+    _DEFAULT_HMMER_EVALUE = "10"
+    _DEFAULT_HMMER_SCORE = 0
+
+    assert threshold in ["evalue_t", "evalue", "score", "score_t"]
+
+    t_value = None
+    if threshold in ["evalue", "evalue_t"]:
+        if HMMER_EVALUE_T_HARD_FILTER:
+            t_value = _DEFAULT_HMMER_EVALUE
+        else:
+            t_value = HMMER_MOTIF_SEARCH[motif_name].get("evalue_t", _DEFAULT_HMMER_EVALUE)
+
+    if threshold in ["score", "score_t"]:
+        if HMMER_SCORE_T_HARD_FILTER:
+            t_value = _DEFAULT_HMMER_SCORE
+        else:
+            t_value = HMMER_MOTIF_SEARCH[motif_name].get("score_t", _DEFAULT_HMMER_EVALUE)
+
+    assert t_value is not None
+
+    return t_value

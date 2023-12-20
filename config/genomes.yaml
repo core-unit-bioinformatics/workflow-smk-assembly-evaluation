@@ -31,3 +31,44 @@ gene_models:
     male: gencode.v44.pc_transcripts.122Y.fa.gz
     female: gencode.v44.pc_transcripts.122X.fa.gz
     any: gencode.v44.pc_transcripts.122XY.fa.gz
+
+repeatmasker_species: human
+
+# Options controlling reporting thresholds:
+#  -E <x> : report sequences <= this E-value threshold in output  [10.0]  (x>0)
+#  -T <x> : report sequences >= this score threshold in output
+hmmer_evalue_t_hard_filter: True
+hmmer_score_t_hard_filter: False
+
+hmmer_motif_search:
+  DYZ18_Yq:
+    score_t: 2100
+    evalue_t: '1.60E-150'
+  DYZ1_Yq:
+    score_t: 2500
+    evalue_t: '1.60E-150'
+  DYZ2_Yq:
+    score_t: 1700
+    evalue_t: '1.60E-150'
+    scale_cpu: 2
+    scale_time: 4
+  DYZ19_Yq:
+    evalue_t: '1.60E-15'
+  DYZ3-prim_Ycentro:
+    score_t: 90
+    evalue_t: '1.60E-15'
+  DYZ3-sec_Ycentro:
+    score_t: 1700
+    evalue_t: '1.60E-150'
+  TSPY:
+    score_t: 1000
+    evalue_t: '1.60E-200'
+    scale_cpu: 4
+    scale_time: 20
+    scale_mem: 25
+  Yqhet_2k7bp:
+    score_t: 1500
+    evalue_t: '1.60E-200'
+  Yqhet_3k1bp:
+    score_t: 1500
+    evalue_t: '1.60E-200'
