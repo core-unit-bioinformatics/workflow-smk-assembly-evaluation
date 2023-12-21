@@ -11,13 +11,13 @@ def get_repeatmasker_run_memory_mb(input_size_mb, compressed=False):
         compression_scaling = 4  # ~gzip compressed FASTA vs uncompressed
 
     if input_size_mb < threshold_tiny * compression_scaling:
-        mem_mb = 4096
+        mem_mb = 16384
     elif input_size_mb < threshold_small * compression_scaling:
-        mem_mb = 49152
+        mem_mb = 110592
     elif input_size_mb < threshold_normal * compression_scaling:
-        mem_mb = 98304
-    else:
         mem_mb = 163840
+    else:
+        mem_mb = 229376
     return mem_mb
 
 

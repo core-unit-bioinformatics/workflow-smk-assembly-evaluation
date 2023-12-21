@@ -36,7 +36,7 @@ rule hmmer_motif_search:
         f"{CONTAINER_STORE}/{config['hmmer']}"
     threads: lambda wildcards: min(CPU_MAX, CPU_MEDIUM * hmmer_scaling("cpu", wildcards.motif))
     resources:
-        mem_mb = lambda wildcards, attempt: (32768 + 32768 * attempt) * hmmer_scaling("mem", wildcards.motif),
+        mem_mb = lambda wildcards, attempt: (65536 + 32768 * attempt) * hmmer_scaling("mem", wildcards.motif),
         time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
     params:
         evalue_t = lambda wildcards: hmmer_threshold_value("evalue_t", wildcards.motif),
