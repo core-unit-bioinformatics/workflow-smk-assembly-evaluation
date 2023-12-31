@@ -25,6 +25,14 @@ rule create_plain_assembly_file:
         "gzip -dc {input.fasta} > {output.tmp_fa}"
 
 
+############### DEBUG
+# Inflated RepeatMasker/Singularity container memory footprint likely due to PBS misconfig
+# This was the original scaling behavior
+#    resources:
+#        mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
+#        time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
+#######################
+
 rule repeatmasker_assembly_run:
     """
     Uses default RepeatMasker library and is designed
@@ -60,8 +68,8 @@ rule repeatmasker_assembly_run:
         f"{CONTAINER_STORE}/{config['repeatmasker']}"
     threads: CPU_MEDIUM
     resources:
-        mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
-        time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
+        mem_mb = lambda wildcards, attempt, input: attempt * 102400,
+        time_hrs = lambda wildcards, attempt, input: attempt * 48,
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.repmask_out[0]).parent,
         species = config.get("repeatmasker_species", "human")

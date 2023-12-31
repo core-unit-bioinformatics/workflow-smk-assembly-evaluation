@@ -13,9 +13,9 @@ def get_repeatmasker_run_memory_mb(input_size_mb, compressed=False):
     if input_size_mb < threshold_tiny * compression_scaling:
         mem_mb = 16384
     elif input_size_mb < threshold_small * compression_scaling:
-        mem_mb = 110592
+        mem_mb = 24576
     elif input_size_mb < threshold_normal * compression_scaling:
-        mem_mb = 163840
+        mem_mb = 32768
     else:
         mem_mb = 229376
     return mem_mb
