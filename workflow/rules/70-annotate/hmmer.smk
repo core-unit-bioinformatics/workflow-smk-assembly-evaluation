@@ -1,11 +1,4 @@
 
-############### DEBUG
-# Inflated HMMER/Singularity container memory footprint likely due to PBS misconfig
-# This was the original scaling behavior
-#        mem_mb = lambda wildcards, attempt: (65536 + 32768 * attempt) * hmmer_scaling("mem", wildcards.motif),
-#        time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
-#######################
-
 rule hmmer_motif_search:
     """NB: the reported hits can EITHER
     be thresholded on the E-value [-E] OR
@@ -14,6 +7,11 @@ rule hmmer_motif_search:
     the E-value (if specified for the motif) and
     then later labels hits above the score threshold
     (if specified for the motif) as high-quality
+
+    IMPORTANT:
+    Only v3.4+ of HMMER has a bug fix for an invalid
+    alphabet detection:
+    https://github.com/EddyRivasLab/hmmer/pull/252
     """
     input:
         asm_unit = rules.create_plain_assembly_file.output.tmp_fa,
@@ -39,12 +37,12 @@ rule hmmer_motif_search:
             "70-annotate", "hmmer",
             "{sample}.{asm_unit}.{motif}.hmmer.rsrc"
         )
-    container:
-        f"{CONTAINER_STORE}/{config['hmmer']}"
-    threads: lambda wildcards: min(CPU_MAX, CPU_MEDIUM * hmmer_scaling("cpu", wildcards.motif))
+    conda:
+        DIR_ENVS.joinpath("biotools", "hmmer.yaml")
+    threads: lambda wildcards: min(CPU_MAX, CPU_LOW * hmmer_scaling("cpu", wildcards.motif))
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 102400,
-        time_hrs = lambda wildcards, attempt: attempt * 48
+        mem_mb = lambda wildcards, attempt: (16384 * attempt) * hmmer_scaling("mem", wildcards.motif),
+        time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
     params:
         evalue_t = lambda wildcards: hmmer_threshold_value("evalue_t", wildcards.motif),
         nhmmer_exec = config.get("nhmmer_exec", "nhmmer")

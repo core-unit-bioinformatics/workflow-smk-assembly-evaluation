@@ -64,8 +64,8 @@ hmmer_motif_search:
     score_t: 1000
     evalue_t: '1.60E-200'
     scale_cpu: 4
-    scale_time: 40
-    scale_mem: 25
+    scale_time: 10
+    scale_mem: 4
   Yqhet_2k7bp:
     score_t: 1500
     evalue_t: '1.60E-200'
