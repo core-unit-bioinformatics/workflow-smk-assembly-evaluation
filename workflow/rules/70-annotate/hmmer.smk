@@ -45,9 +45,8 @@ rule hmmer_motif_search:
         time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
     params:
         evalue_t = lambda wildcards: hmmer_threshold_value("evalue_t", wildcards.motif),
-        nhmmer_exec = config.get("nhmmer_exec", "nhmmer")
     shell:
-        "{params.nhmmer_exec} --cpu {threads} --dna "
+        "nhmmer --cpu {threads} --dna "
         "-o {output.txt} --tblout {output.table} "
         "-E {params.evalue_t} "
         "{input.motif} {input.asm_unit} &> {log}"

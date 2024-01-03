@@ -1,13 +1,6 @@
 
 # contains:
-# hmmer v3.3.2
 # RepeatMasker v4.1.6
 # Dfam v3.8
 # trf v4.09.1
 repeatmasker: dfam-tetools_v1.88_e1e1a6f1cd8b.sif
-hmmer: dfam-tetools_v1.88_e1e1a6f1cd8b.sif
-
-# the following is optional and just exists b/c
-# the nhmmer exec is not in $PATH in the TE tools
-# container ... just why ...
-nhmmer_exec: /opt/hmmer/bin/nhmmer
