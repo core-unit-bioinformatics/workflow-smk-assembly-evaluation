@@ -669,7 +669,7 @@ def main(cache_tempfile):
             summary = prepare_summary(args, stats, proc_timings["total"].values)
         else:
             summary = prepare_summary(args, stats, None)
-            print(summary)
+
         if args.output_summary is not None:
             args.output_summary.parent.mkdir(exist_ok=True, parents=True)
             summary.to_csv(args.output_summary, sep="\t", header=True, index=False)
