@@ -27,7 +27,7 @@ rule ncbi_fcs_adaptor_screening:
         "mkdir -p {params.out_dir}"
             " && "
         "{input.sh_script} --fasta-input {input.fasta} --output-dir {params.out_dir} "
-        "--{params.taxonomy} --container-engine singularity --image {input.sif} "
+        "--{params.taxonomy} --container-engine singularity --image {input.sif} &> {log}"
 
 
 rule ncbi_fcs_gx_contamination_screening:
