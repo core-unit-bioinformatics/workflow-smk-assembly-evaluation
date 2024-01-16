@@ -67,7 +67,7 @@ rule repeatmasker_assembly_run:
         species = REPEATMASKER_SPECIES
     shell:
         "RepeatMasker -pa {threads} -s -dir {params.out_dir} "
-        "-species {params.species} {input} &> {log}"
+        "-species {params.species} {input.fasta} &> {log}"
 
 
 rule collect_repeatmasker_output:
