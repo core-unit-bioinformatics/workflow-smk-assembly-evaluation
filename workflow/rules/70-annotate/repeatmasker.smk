@@ -58,6 +58,8 @@ rule repeatmasker_assembly_run:
             "70-annotate", "repeatmasker",
             "{sample}.{asm_unit}.repmask.rsrc"
         )
+    conda:
+        DIR_ENVS.joinpath("biotools", "repmask.yaml")
     threads: CPU_LOW
     resources:
         mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
