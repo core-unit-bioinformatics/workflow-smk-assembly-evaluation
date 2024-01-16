@@ -90,7 +90,7 @@ rule repmask_setup_test_input:
 
 rule repmask_build_database:
     input:
-        fasta = rules.repmask_setup_test_input.output.fasta
+        fasta = rules.repmask_setup_test_input.output.mock
     output:
         rm_check = DIR_PROC.joinpath(
             "70-annotate", "setup_repmask", "repmask_run.ok"
@@ -106,7 +106,7 @@ rule repmask_build_database:
         time_hrs = lambda wildcards, attempt: attempt
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.rm_check).with_suffix(".wd"),
-        species = config.get("repeatmasker_species", "human")
+        species = REPEATMASKER_SPECIES
     shell:
         "RepeatMasker -pa 2 -s -dir {params.out_dir} "
         "-species {params.species} {input.fasta} &> {log}"

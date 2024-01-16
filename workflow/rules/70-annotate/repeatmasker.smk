@@ -64,7 +64,7 @@ rule repeatmasker_assembly_run:
         time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.repmask_out[0]).parent,
-        species = config.get("repeatmasker_species", "human")
+        species = REPEATMASKER_SPECIES
     shell:
         "RepeatMasker -pa {threads} -s -dir {params.out_dir} "
         "-species {params.species} {input} &> {log}"
