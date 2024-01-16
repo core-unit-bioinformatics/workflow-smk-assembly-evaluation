@@ -10,7 +10,7 @@ if REPEATMASKER_OFFLINE_SETUP:
         conda:
             DIR_ENVS.joinpath("biotools", "repmask.yaml")
         shell:
-            "echo ${CONDA_PREFIX} > {output}"
+            "echo ${{CONDA_PREFIX}} > {output}"
 
 
     rule copy_repeatmasker_dfam_database:
