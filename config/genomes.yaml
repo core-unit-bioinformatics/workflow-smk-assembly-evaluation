@@ -32,7 +32,10 @@ gene_models:
     female: gencode.v44.pc_transcripts.122X.fa.gz
     any: gencode.v44.pc_transcripts.122XY.fa.gz
 
+run_repeatmasker: True
 repeatmasker_species: human
+repeatmasker_offline_setup: True
+
 
 # Options controlling reporting thresholds:
 #  -E <x> : report sequences <= this E-value threshold in output  [10.0]  (x>0)
@@ -64,7 +67,7 @@ hmmer_motif_search:
     score_t: 1000
     evalue_t: '1.60E-200'
     scale_cpu: 4
-    scale_time: 10
+    scale_time: 71
     scale_mem: 4
   Yqhet_2k7bp:
     score_t: 1500

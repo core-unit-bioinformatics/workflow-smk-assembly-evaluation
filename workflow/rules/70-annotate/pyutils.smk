@@ -43,6 +43,28 @@ def get_repeatmasker_run_time_hrs(input_size_mb, compressed=False):
     return time_hrs
 
 
+def get_num_threads_hmmer(motif_name):
+    """This separate helper function exists
+    to encapsulate the THREADS value set for
+    a default run, i.e. CPU_LOW
+    """
+    num_threads = int(min(CPU_MAX, CPU_LOW * hmmer_scaling("cpu", motif_name)))
+    return num_threads
+
+
+def get_mem_mb_hmmer(motif_name):
+    """Empirically, HMMER uses about 3g
+    per CPU thread on average
+    """
+
+    num_threads = get_num_threads_hmmer(motif_name)
+    mem_scale_factor = hmmer_scaling("mem", motif_name)
+
+    mem_per_thread = 3072 * mem_scale_factor
+    total_mem = int(mem_per_thread * num_threads)
+    return total_mem
+
+
 def hmmer_scaling(resource, motif_name):
 
     assert resource in ["cpu", "mem", "time"]

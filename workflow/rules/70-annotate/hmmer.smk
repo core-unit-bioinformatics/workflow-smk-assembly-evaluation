@@ -39,10 +39,10 @@ rule hmmer_motif_search:
         )
     conda:
         DIR_ENVS.joinpath("biotools", "hmmer.yaml")
-    threads: lambda wildcards: min(CPU_MAX, CPU_LOW * hmmer_scaling("cpu", wildcards.motif))
+    threads: lambda wildcards: get_num_threads_hmmer(wildcards.motif)
     resources:
-        mem_mb = lambda wildcards, attempt: (16384 * attempt) * hmmer_scaling("mem", wildcards.motif),
-        time_hrs = lambda wildcards, attempt: attempt * attempt * hmmer_scaling("time", wildcards.motif)
+        mem_mb = lambda wildcards, attempt: attempt * get_mem_mb_hmmer(wildcards.motif),
+        time_hrs = lambda wildcards, attempt: attempt * hmmer_scaling("time", wildcards.motif)
     params:
         evalue_t = lambda wildcards: hmmer_threshold_value("evalue_t", wildcards.motif),
     shell:

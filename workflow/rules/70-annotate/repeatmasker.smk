@@ -25,18 +25,11 @@ rule create_plain_assembly_file:
         "gzip -dc {input.fasta} > {output.tmp_fa}"
 
 
-############### DEBUG
-# Inflated RepeatMasker/Singularity container memory footprint likely due to PBS misconfig
-# This was the original scaling behavior
-#    resources:
-#        mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
-#        time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
-#######################
-
 rule repeatmasker_assembly_run:
     """
-    Uses default RepeatMasker library and is designed
-    for the TE tool container (see unzip rule above).
+    Uses default RepeatMasker library (Dfam/curated)
+    and is designed for a Conda install.
+    The TE tool container has caused problems of unclear origin.
     cf.: github.com/rmhubley/RepeatMasker/issues/233
 
     NB: RepeatMasker cannot process compressed files, but the
@@ -44,6 +37,7 @@ rule repeatmasker_assembly_run:
     Hence the unzip rule above.
     """
     input:
+        rm_db_ok = rules.repmask_build_database.output.rm_check,
         fasta = rules.create_plain_assembly_file.output.tmp_fa
     output:
         repmask_out = multiext(
@@ -64,12 +58,10 @@ rule repeatmasker_assembly_run:
             "70-annotate", "repeatmasker",
             "{sample}.{asm_unit}.repmask.rsrc"
         )
-    container:
-        f"{CONTAINER_STORE}/{config['repeatmasker']}"
-    threads: CPU_MEDIUM
+    threads: CPU_LOW
     resources:
-        mem_mb = lambda wildcards, attempt, input: attempt * 102400,
-        time_hrs = lambda wildcards, attempt, input: attempt * 48,
+        mem_mb = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_memory_mb(input.size_mb, compressed=True),
+        time_hrs = lambda wildcards, attempt, input: attempt * get_repeatmasker_run_time_hrs(input.size_mb, compressed=True),
     params:
         out_dir = lambda wildcards, output: pathlib.Path(output.repmask_out[0]).parent,
         species = config.get("repeatmasker_species", "human")

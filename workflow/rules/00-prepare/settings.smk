@@ -146,3 +146,14 @@ if RUN_NCBI_FCS_GX:
 
 HMMER_MOTIF_SEARCH = config.get("hmmer_motif_search", dict())
 HMMER_MOTIF_NAMES = sorted(HMMER_MOTIF_SEARCH.keys())
+
+### parameters for RepeatMasker annotation
+
+RUN_REPEATMASKER = config.get("run_repeatmasker", True)
+REPEATMASKER_OFFLINE_SETUP = config.get("repeatmasker_offline_setup", False)
+
+REPEATMASKER_SPECIES = config.get("repeatmasker_species", None)
+if REPEATMASKER_SPECIES is None and RUN_REPEATMASKER:
+    raise ValueError("Workflow configured to run repeatmasker, but no 'species' set")
+
+
