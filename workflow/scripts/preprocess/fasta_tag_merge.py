@@ -54,6 +54,23 @@ def parse_command_line():
         dest="buffer_size"
     )
 
+    # 2024-01-16
+    # the following argument was introduced
+    # to make the NCBI FCS adaptor screening work
+    # again for some assemblies that contained
+    # sequences shorter than 10 bp (origin unknown)
+    parser.add_argument(
+        "--skip-scraps",
+        "-s",
+        type=int,
+        default=10,
+        dest="skip_scraps",
+        help=(
+            "Skip over scraps (very short sequence fragments) "
+            "shorter than N bp in the input. Default: 10 (bp)"
+        )
+    )
+
     parser.add_argument(
         "--report",
         "-r",
@@ -110,6 +127,7 @@ def main():
         outfile.parent.mkdir(exist_ok=True, parents=True)
 
     processed_records = 0
+    skipped_scraps = 0  # see above in arg parser
     process_start = time.perf_counter()
     check_uniq_seqnames = col.defaultdict(list)
     with ctl.ExitStack() as exs:
@@ -133,6 +151,9 @@ def main():
             with dnaio.open(input_file, mode="r") as fasta:
                 for record in fasta:
                     processed_records += 1
+                    if len(record.sequence) < args.skip_scraps:
+                        skipped_scraps += 1
+                        continue
                     check_uniq_seqnames[record.name].append(file_tag)
                     tagged_name = f"{record.name}{file_tag}"
                     if use_buffer:
@@ -173,6 +194,7 @@ def main():
         sys.stderr.write(
             "\n\n=== fasta_tag_merge report ==="
             f"\nProcessed records: {processed_records}"
+            f"\nSkipped scrap records: {skipped_scraps}"
             f"\nTotal processing time: ~{total_time} sec"
             f"\nTagging time (incl. I/O): ~{tagging_time} sec"
             f"\nTag evaluation time: ~{tag_eval_time} sec"
