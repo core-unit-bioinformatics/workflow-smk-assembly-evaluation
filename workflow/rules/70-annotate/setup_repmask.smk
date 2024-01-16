@@ -110,3 +110,5 @@ rule repmask_build_database:
     shell:
         "RepeatMasker -pa 2 -s -dir {params.out_dir} "
         "-species {params.species} {input.fasta} &> {log}"
+            " && "
+        "touch {output.rm_check}"
