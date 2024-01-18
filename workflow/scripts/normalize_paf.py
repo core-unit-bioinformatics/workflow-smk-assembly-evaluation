@@ -80,13 +80,31 @@ def get_fixed_column_definitions():
 
 
 def get_variable_column_definitions():
-    # https://lh3.github.io/minimap2/minimap2.html
+    """The PAF format is defined with variable
+    columns that may or may not exist in the PAF file.
+
+    The minimap2 column definitions are described here:
+    https://lh3.github.io/minimap2/minimap2.html
+
+    The mashmap-specific columns are:
+    'id_ani': frac. seq. identity; average nucleotide identity),
+                see changelog for v3.0.1
+    'kc_kmcomplex': k-mer complexity; distinct over all k-mers in segment,
+                estimate can be larger than 1 according to docs [?],
+                see changelog for v3.0.6
+    'jc_jaccardsim': Jaccard similarity, see changelog v3.0.1
+
+    Returns:
+        _type_: _description_
+    """
+
 
     PAF_VARIABLE_COLUMN_KEYS = [
         "tp", "cm", "s1", "s2", "nm", "md",
         "as", "sa", "ms", "nn", "ts", "cg",
         "cs", "dv", "de", "rl",
-        "zd"
+        "zd",
+        "id", "kc", "jc"
     ]
     PAF_VARIABLE_COLUMN_NAMES = [
         "tp_align_type", "cm_num_chain_miniz",
@@ -96,7 +114,8 @@ def get_variable_column_definitions():
         "nn_ambig_bases", "ts_transcript_strand",
         "cg_cigar", "cs_tag_diffs", "dv_seq_div",
         "de_gapcomp_seq_div", "rl_len_rep_seed_query",
-        "zd_undefined"
+        "zd_undefined",
+        "id_ani", "kc_kmcomplex", "jc_jaccardsim"
     ]
     PAF_VARIABLE_COLUMN_TYPES = [
         int, int,
@@ -106,7 +125,8 @@ def get_variable_column_definitions():
         int, int,
         str, str, float,
         float, int,
-        int
+        int,
+        float, float, float
     ]
     PAF_VARIABLE_COLUMN_REPLACEMENTS = [
         {"P": 1, "p": 1, "S": 2, "s": 2, "I": -1, "i": -1}, None,
@@ -116,7 +136,8 @@ def get_variable_column_definitions():
         None, {"+": 1, "-": -1, "*": 0},
         None, None, None,
         None, None,
-        None
+        None,
+        None, None, None
     ]
 
     PAF_VARIABLE_COLUMN_MISSING = [
@@ -127,7 +148,8 @@ def get_variable_column_definitions():
         -1, 0,
         "unaligned", "unaligned", -1,
         -1, -1,
-        -1
+        -1,
+        -1, -1, -1
     ]
 
     iter_def = (
