@@ -89,6 +89,54 @@ rule minimap_assembly_to_reference_align_bam:
         "samtools index -@ {threads} {output.bam}"
 
 
+rule mashmap_assembly_to_reference_align_paf:
+    """The coarse-grained mashmap alignments are
+    only used to provide a rough estimate of
+    reference/chromosome spanning in particular
+    for incomplete reference genomes (i.e. hg38)
+
+    TODO - make cli parameters user-configurable
+    --pi 99 / percent seq. identity
+    --segLength 100000 / skip shorter sequences
+    """
+    input:
+        ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
+        assm = rules.compress_clean_assembly_sequences.output.fagz,
+        idx = rules.compress_clean_assembly_sequences.output.fai,
+    output:
+        paf = DIR_PROC.joinpath(
+            "alignments", "contig_to_ref", "{refgenome}",
+            "paf", "{sample}.{asm_unit}.{refgenome}.approx.paf"
+        )
+    conda:
+        DIR_ENVS.joinpath("aligner", "mashmap.yaml")
+    threads: CPU_LOW
+    resources:
+        time_hrs = lambda wildcards, attempt: attempt,
+        mem_mb = lambda wildcards, attempt: 6144 * attempt,
+    shell:
+        "mashmap -r {input.ref} -q {input.assm} "
+        "-f one-to-one --pi 99 --segLength 100000 --dense"
+
+
+rule normalize_mashmap_assembly_to_reference_align_paf:
+    input:
+        paf = rules.mashmap_assembly_to_reference_align_paf.output.paf
+    output:
+        tsv = DIR_PROC.joinpath(
+            "alignments", "contig_to_ref", "{refgenome}",
+            "table", "{sample}.{asm_unit}.{refgenome}.norm-approx.tsv.gz"
+        )
+    conda:
+        DIR_ENVS.joinpath("pyutils.yaml")
+    resources:
+        mem_mb = lambda wildcards, attempt: 1024 * attempt
+    params:
+        script=find_script("normalize_paf")
+    shell:
+        "{params.script} --input {input.paf} --output {output.tsv}"
+
+
 # TODO need general strategy to identify assembly units to use here
 rule run_minimap_contig_to_ref_alignments:
     input:
@@ -103,4 +151,19 @@ rule run_minimap_contig_to_ref_alignments:
                 refgenome=WILDCARDS_REF_GENOMES,
                 sample=SAMPLES,
                 asm_unit=ASSEMBLY_UNITS_NO_CONTAM
+        )
+
+
+rule run_mashmap_contig_to_ref_alignments:
+    """TODO
+    This needs assembler-specific wildcards;
+    only larger contigs make sense for the approx
+    alignment
+    """
+    input:
+        tsv = expand(
+            rules.normalize_mashmap_assembly_to_reference_align_paf.output.tsv,
+            refgenome=WILDCARDS_REF_GENOMES,
+            sample=SAMPLES,
+            asm_unit=["asm-hap1", "asm-hap2", "asm-unassigned"]
         )

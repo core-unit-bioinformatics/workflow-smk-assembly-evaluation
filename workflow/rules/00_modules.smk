@@ -37,9 +37,11 @@ include: "70-annotate/setup_repmask.smk"
 include: "70-annotate/repeatmasker.smk"
 include: "70-annotate/hmmer.smk"
 include: "70-annotate/ngaps.smk"
+include: "70-annotate/telomeres.smk"
 
 include: "75-completeness/pyutils.smk"
 include: "75-completeness/asmgene.smk"
+include: "75-completeness/ref_span.smk"
 
 include: "80-statistics/assemblies.smk"
 
