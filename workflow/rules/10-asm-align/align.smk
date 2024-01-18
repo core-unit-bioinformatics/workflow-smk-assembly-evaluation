@@ -116,7 +116,8 @@ rule mashmap_assembly_to_reference_align_paf:
         mem_mb = lambda wildcards, attempt: 6144 * attempt,
     shell:
         "mashmap -r {input.ref} -q {input.assm} "
-        "-f one-to-one --pi 99 --segLength 100000 --dense"
+        "-f one-to-one --pi 99 --segLength 100000 --dense "
+        "--output {output.paf}"
 
 
 rule normalize_mashmap_assembly_to_reference_align_paf:
