@@ -105,7 +105,7 @@ rule mashmap_assembly_to_reference_align_paf:
         idx = rules.compress_clean_assembly_sequences.output.fai,
     output:
         paf = DIR_PROC.joinpath(
-            "alignments", "contig_to_ref", "{refgenome}",
+            "10-asm-align", "contig_to_ref", "{refgenome}",
             "paf", "{sample}.{asm_unit}.{refgenome}.approx.paf"
         )
     conda:
@@ -113,7 +113,7 @@ rule mashmap_assembly_to_reference_align_paf:
     threads: CPU_LOW
     resources:
         time_hrs = lambda wildcards, attempt: attempt,
-        mem_mb = lambda wildcards, attempt: 6144 * attempt,
+        mem_mb = lambda wildcards, attempt: 32768 * attempt,
     shell:
         "mashmap -r {input.ref} -q {input.assm} "
         "-f one-to-one --pi 99 --segLength 100000 --dense "
@@ -125,7 +125,7 @@ rule normalize_mashmap_assembly_to_reference_align_paf:
         paf = rules.mashmap_assembly_to_reference_align_paf.output.paf
     output:
         tsv = DIR_PROC.joinpath(
-            "alignments", "contig_to_ref", "{refgenome}",
+            "10-asm-align", "contig_to_ref", "{refgenome}",
             "table", "{sample}.{asm_unit}.{refgenome}.norm-approx.tsv.gz"
         )
     conda:
