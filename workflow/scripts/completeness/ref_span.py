@@ -101,13 +101,55 @@ def select_spanning_alignments(alignments):
     return span_regions
 
 
+def has_large_overlap(iv_new, iv_old):
+    """If the reference span is computed for an unphased
+    sequence input, it may happen that two large contigs
+    align (roughly) to the same region that just stem from
+    different haplotypes; this information can be vital
+    to detect large-scale phasing errors/dropouts.
+    Hence, if the reciprocal overlap between the two regions
+    is substantial, we keep both in the output.
+
+    Args:
+        iv_new (Pandas.Series (row of DF)): genomic interval to check
+        iv_old (Pandas.Series (row of DF)): genomic interval already selected
+
+    Returns:
+        bool: size ratio > 0.75
+    """
+    # we know that iv_old is the larger one ...
+    old_size = iv_old.end - iv_old.start
+    new_size = iv_new.end - iv_new.start
+    # ...hence this must be smaller than 1
+    size_ratio = round(old_size / new_size, 2)
+    # if the size ratio is above .75, we keep both fragments,
+    # i.e. return True
+    return size_ratio > 0.75
+
+
 def is_contained(check_iv, other_iv):
+    """We want to get rid of spurious alignments that are
+    fully contained in other alignments to the same region
+    (since the list of alignments is sorted by size in
+    descending order, subsequent alignments are always
+    same size or [usually] smaller).
+
+    Args:
+        check_iv (_type_): _description_
+        other_iv (_type_): _description_
+
+    Returns:
+        bool: _description_
+    """
 
     is_contained = False
     for iv in other_iv:
         if iv.start <= check_iv.start < check_iv.end <= iv.end:
             is_contained = True
-            break
+            if has_large_overlap(check_iv, iv):
+                is_contained = False
+            else:
+                break
     return is_contained
 
 
