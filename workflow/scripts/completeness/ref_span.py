@@ -29,6 +29,18 @@ def parse_command_line():
     )
 
     parser.add_argument(
+        "--discard-threshold",
+        "-dt",
+        type=int,
+        default=int(5e6),
+        dest="discard_threshold",
+        help=(
+            "Do not discard contigs that span at least this much sequence "
+            "on the reference. Default: 5 Mbp"
+        )
+    )
+
+    parser.add_argument(
         "--ref-span",
         "--output", "-o",
         type=lambda x: pl.Path(x).resolve(strict=False),
@@ -101,32 +113,6 @@ def select_spanning_alignments(alignments):
     return span_regions
 
 
-def has_large_overlap(iv_new, iv_old):
-    """If the reference span is computed for an unphased
-    sequence input, it may happen that two large contigs
-    align (roughly) to the same region that just stem from
-    different haplotypes; this information can be vital
-    to detect large-scale phasing errors/dropouts.
-    Hence, if the reciprocal overlap between the two regions
-    is substantial, we keep both in the output.
-
-    Args:
-        iv_new (Pandas.Series (row of DF)): genomic interval to check
-        iv_old (Pandas.Series (row of DF)): genomic interval already selected
-
-    Returns:
-        bool: size ratio > 0.75
-    """
-    # we know that iv_old is the larger one ...
-    old_size = iv_old.end - iv_old.start
-    new_size = iv_new.end - iv_new.start
-    # ...hence this must be smaller than 1
-    size_ratio = round(old_size / new_size, 2)
-    # if the size ratio is above .75, we keep both fragments,
-    # i.e. return True
-    return size_ratio > 0.75
-
-
 def is_contained(check_iv, other_iv):
     """We want to get rid of spurious alignments that are
     fully contained in other alignments to the same region
@@ -146,14 +132,16 @@ def is_contained(check_iv, other_iv):
     for iv in other_iv:
         if iv.start <= check_iv.start < check_iv.end <= iv.end:
             is_contained = True
-            if has_large_overlap(check_iv, iv):
-                is_contained = False
-            else:
-                break
+            break
     return is_contained
 
 
-def drop_contained_regions(span_regions):
+def is_small(iv, lower_size_threshold):
+    iv_size = iv.end - iv.start
+    return iv_size < lower_size_threshold
+
+
+def drop_contained_regions(span_regions, discard_threshold):
     """In particular for acrocentric chromosomes,
     the short arms will often be shattered and many
     long-ish sequences cross-align. The greedy selection
@@ -181,7 +169,7 @@ def drop_contained_regions(span_regions):
             if not chrom_regions:
                 chrom_regions.append(row)
                 continue
-            if is_contained(row, chrom_regions):
+            if is_contained(row, chrom_regions) and is_small(row, discard_threshold):
                 continue
             chrom_regions.append(row)
 
@@ -223,7 +211,7 @@ def main():
 
     span_regions = select_spanning_alignments(args.alignments)
 
-    span_regions = drop_contained_regions(span_regions)
+    span_regions = drop_contained_regions(span_regions, args.discard_threshold)
 
     if args.telomeres is not None:
         telo_lut = read_telomere_annotation(args.telomeres)
