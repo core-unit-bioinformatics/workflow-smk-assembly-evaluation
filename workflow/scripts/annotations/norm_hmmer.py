@@ -103,6 +103,7 @@ def parse_command_line():
         "--norm-table", "-out", "-o",
         type=lambda x: pl.Path(x).resolve(strict=False),
         dest="norm_table",
+        help="Normalized output table (TSV).",
         required=True,
     )
 
@@ -110,6 +111,7 @@ def parse_command_line():
         "--bed-all", "-bed",
         type=lambda x: pl.Path(x).resolve(strict=False),
         dest="bed_all",
+        help="Normalized motif matches reduced to BED-like output format.",
         required=True,
     )
 
@@ -117,6 +119,7 @@ def parse_command_line():
         "--bed-hiq", "-hiq",
         type=lambda x: pl.Path(x).resolve(strict=False),
         dest="bed_hiq",
+        help="Normalized motif matches reduced to high-quality hits dumped to BED-like output format.",
         required=True,
     )
 
@@ -124,6 +127,7 @@ def parse_command_line():
         "--aggregated", "-agg", "-a",
         type=lambda x: pl.Path(x).resolve(strict=False),
         dest="aggregated",
+        help="Aggregated statistics for all motif matches (TSV).",
         required=True,
     )
 
@@ -287,16 +291,33 @@ def dump_file_to_disk(dataframe, file_path, prefix_header=False):
             dataframe.to_csv(dump, sep="\t", header=True, index=False)
     else:
         dataframe.to_csv(file_path, sep="\t", header=True, index=False)
+    # if that operation succeeded, a non-empty output
+    # file was created, hence, delete a potential
+    # EMPTY flag file that was created during a previous run
+    remove_flag_file(file_path)
     return
 
 
 def create_empty_flag_file(file_path):
 
+    flag_file = get_empty_flag_file_path(file_path)
+    with open(flag_file, "w"):
+        pass
+    return
+
+
+def get_empty_flag_file_path(file_path):
+
     file_ext = file_path.suffix  # this has leading dot
     empty_flag = f"{file_ext}.EMPTY"
     flag_file = file_path.with_suffix(empty_flag)
-    with open(flag_file, "w"):
-        pass
+    return flag_file
+
+
+def remove_flag_file(file_path):
+
+    flag_file = get_empty_flag_file_path(file_path)
+    flag_file.unlink(missing_ok=True)
     return
 
 
