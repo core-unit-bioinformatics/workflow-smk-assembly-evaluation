@@ -268,6 +268,8 @@ def reduce_to_bed_like_table(motif_hits):
 
     bed_like = motif_hits[HMMER_BED_COLUMNS].copy()
     bed_like.sort_values(["target", "target_hit_start", "target_hit_end"], inplace=True)
+    # BED format is zero-based, nhmmer output is not
+    bed_like["target_hit_start"] -= 1
 
     select_hiq = bed_like["hit_hiq"] == 1
 
