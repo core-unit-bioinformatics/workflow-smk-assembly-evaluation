@@ -8,6 +8,8 @@ import pandas
 SAMPLES = None
 SAMPLE_INFOS = None
 
+CONSTRAINT_ALL_SAMPLES = None
+
 
 def process_sample_sheet():
 
@@ -248,3 +250,5 @@ def _collect_files(folder):
     return all_files
 
 process_sample_sheet()
+
+CONSTRAINT_ALL_SAMPLES = _build_constraint(SAMPLES)
