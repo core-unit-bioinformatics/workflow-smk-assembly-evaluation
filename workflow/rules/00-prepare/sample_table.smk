@@ -7,18 +7,11 @@ import pandas
 
 SAMPLES = None
 SAMPLE_INFOS = None
-SAMPLE_SHEET_ID = None
 
 
 def process_sample_sheet():
 
     SAMPLE_SHEET_FILE = pathlib.Path(config["samples"]).resolve(strict=True)
-
-    sample_sheet_name = SAMPLE_SHEET_FILE.stem
-    sample_sheet_content = open(SAMPLE_SHEET_FILE, "rb").read()
-    sample_sheet_md5 = hashlib.md5(sample_sheet_content).hexdigest()
-    global SAMPLE_SHEET_ID
-    SAMPLE_SHEET_ID = f"{sample_sheet_name}.{sample_sheet_md5[:8]}"
 
     SAMPLE_SHEET = pandas.read_csv(
         SAMPLE_SHEET_FILE,
@@ -143,70 +136,6 @@ def normalize_sample_sex(sample_sex):
         raise ValueError(f"Cannot normalize sample sex: {sample_sex}")
 
     return norm_sex
-
-
-def collect_input_files(sample_sheet):
-    """
-    The output of this function should
-    be sufficient to run the workflow
-    in single-sample mode
-    """
-    sample_input = collections.defaultdict(dict)
-    trio_samples = set()
-    sseq_samples = set()
-    unphased_samples = set()
-
-    for row in sample_sheet.itertuples():
-        sample = row.sample
-        hifi_input, hifi_hashes = collect_sequence_input(row.hifi)
-        ont_input, ont_hashes = collect_sequence_input(row.ont)
-        if row.target == "trio":
-            assert hasattr(row, "hap1") and hasattr(row, "hap2"), (
-                f"Trio-phasing a sample requires hap1/hap2 "
-                "columns in sample sheet: {sample}"
-            )
-            trio_samples.add(sample)
-            hap1_db = row.hap1
-            assert hap1_db.endswith("meryl")
-            assert pathlib.Path(hap1_db).resolve(strict=True).is_dir()
-            sample_input[sample]["hap1"] = hap1_db
-
-            hap2_db = row.hap2
-            assert hap2_db.endswith("meryl")
-            assert pathlib.Path(hap2_db).resolve(strict=True).is_dir()
-            sample_input[sample]["hap2"] = hap2_db
-
-            assert sample_input[sample]["hap1"] != sample_input[sample]["hap2"]
-
-        elif row.target == "sseq":
-            # NB: at the moment, phasing an assembly with
-            # Strand-seq requires to complete the unphased assembly
-            # first, hence the sample is always added to the
-            # unphased_samples set as well. This may need to be
-            # changed if both pipelines can be integrated.
-            unphased_samples.add(sample)
-            sseq_samples.add(sample)
-            assert hasattr(row, "phasing_paths"), (
-                "Strand-seq phasing of sample requires"
-                f"phasing_paths column in sample sheet: {sample}"
-            )
-            phasing_paths_file = pathlib.Path(row.phasing_paths).resolve(strict=True)
-            assert phasing_paths_file.is_file(), (
-                f"Phasing paths entry is not a valid file: {phasing_paths_file}"
-            )
-            assert phasing_paths_file.suffix == ".gaf", (
-                f"Phasing paths file must be GAF: {phasing_paths_file.name}"
-            )
-            sample_input[sample]["phasing_paths"] = phasing_paths_file
-
-        elif row.target == "unphased":
-            unphased_samples.add(sample)
-        else:
-            raise ValueError(row.target)
-        sample_input[sample]["hifi"] = hifi_input
-        sample_input[sample]["ont"] = ont_input
-
-    return sample_input, trio_samples, sseq_samples, unphased_samples
 
 
 def _read_input_files_from_fofn(fofn_path):

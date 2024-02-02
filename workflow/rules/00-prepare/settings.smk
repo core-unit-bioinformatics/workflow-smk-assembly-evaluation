@@ -144,6 +144,7 @@ if RUN_NCBI_FCS_GX:
 
 ### parameters for HMMER motif search
 
+RUN_HMMER = config.get("run_hmmer", True)
 HMMER_MOTIF_SEARCH = config.get("hmmer_motif_search", dict())
 HMMER_MOTIF_NAMES = sorted(HMMER_MOTIF_SEARCH.keys())
 

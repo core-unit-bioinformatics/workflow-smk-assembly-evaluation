@@ -32,11 +32,11 @@ gene_models:
     female: gencode.v44.pc_transcripts.122X.fa.gz
     any: gencode.v44.pc_transcripts.122XY.fa.gz
 
-run_repeatmasker: True
+run_repeatmasker: False
 repeatmasker_species: human
 repeatmasker_offline_setup: True
 
-
+run_hmmer: True
 # Options controlling reporting thresholds:
 #  -E <x> : report sequences <= this E-value threshold in output  [10.0]  (x>0)
 ### >>> the evalue_t threshold will be used to limit the output of HMMER
@@ -55,20 +55,9 @@ hmmer_motif_search:
     evalue_t: '1.60E-150'
     scale_cpu: 2
     scale_time: 4
-  DYZ19_Yq:
-    evalue_t: '1.60E-15'
-  DYZ3-prim_Ycentro:
-    score_t: 90
-    evalue_t: '1.60E-15'
   DYZ3-sec_Ycentro:
     score_t: 1700
     evalue_t: '1.60E-150'
-  Yqhet_2k7bp:
-    score_t: 1500
-    evalue_t: '1.60E-200'
-  Yqhet_3k1bp:
-    score_t: 1500
-    evalue_t: '1.60E-200'
 
 # TODO - move into project-specific config
 # the TSPY motif is too large to scan entire genomes;
@@ -80,4 +69,15 @@ hmmer_motif_search:
   #   scale_cpu: 4
   #   scale_time: 71
   #   scale_mem: 5
+  # DYZ19_Yq:
+  #   evalue_t: '1.60E-15'
+  # DYZ3-prim_Ycentro:
+  #   score_t: 90
+  #   evalue_t: '1.60E-15'
+  # Yqhet_2k7bp:
+  #   score_t: 1500
+  #   evalue_t: '1.60E-200'
+  # Yqhet_3k1bp:
+  #   score_t: 1500
+  #   evalue_t: '1.60E-200'
 
