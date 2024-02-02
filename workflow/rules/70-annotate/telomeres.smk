@@ -24,6 +24,6 @@ rule run_all_seqtk_telomere_motifs:
         tables = expand(
             rules.seqtk_annotate_telomere_motifs.output.table,
             sample=SAMPLES,
-            asm_unit=["asm-hap1", "asm-hap2", "asm-unassigned"]
+            asm_unit=ASSEMBLY_UNITS_MAIN
         )
 

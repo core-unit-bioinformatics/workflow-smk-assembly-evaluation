@@ -25,6 +25,11 @@ sex_specific_assembly_units:
   - hap1
   - hap2
 
+main_assembly_units:
+  - hap1
+  - hap2
+  - unassigned
+
 # controls rules in
 # 50-postprocess::asm_ctg_readcov.smk
 # 60-flagging::readcov.smk

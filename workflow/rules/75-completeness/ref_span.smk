@@ -29,6 +29,6 @@ rule run_all_compute_approx_ref_span:
         tables = expand(
             rules.compute_approx_reference_span.output.table,
             sample=SAMPLES,
-            asm_unit=["asm-hap1", "asm-hap2", "asm-unassigned"],
+            asm_unit=ASSEMBLY_UNITS_MAIN,
             refgenome=WILDCARDS_REF_GENOMES
         )

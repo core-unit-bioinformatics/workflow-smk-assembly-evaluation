@@ -62,6 +62,22 @@ for asm_unit in config.get("sex_specific_assembly_units", []):
 FORCE_ANNOTATED_SAMPLE_SEX = config.get("force_annotated_sample_sex", False)
 assert isinstance(FORCE_ANNOTATED_SAMPLE_SEX, bool)
 
+# TODO: refactor this and the above into a function
+ASSEMBLY_UNITS_MAIN = []
+for asm_unit in config.get("main_assembly_units", []):
+    if asm_unit.startswith("asm_"):
+        lookup_name = asm_unit.replace("_", "-")
+        ASSEMBLY_UNITS_MAIN.append(lookup_name)
+    elif asm_unit.startswith("asm-"):
+        ASSEMBLY_UNITS_MAIN.append(asm_unit)
+    else:
+        lookup_name = f"asm-{asm_unit}"
+        if lookup_name not in ASSEMBLY_UNITS_PLUS_CONTAM:
+            logerr(f"Name of main assembly unit seems to be malformed: {asm_unit} / {lookup_name}")
+            raise ValueError("Name of assembly units must be 'asm_NAME' (NAME all lowercase characters).")
+        ASSEMBLY_UNITS_MAIN.append(lookup_name)
+
+
 # TOOL PARAMETERS
 
 ## mosdepth

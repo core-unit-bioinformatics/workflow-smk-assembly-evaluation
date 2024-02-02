@@ -166,5 +166,5 @@ rule run_mashmap_contig_to_ref_alignments:
             rules.normalize_mashmap_assembly_to_reference_align_paf.output.tsv,
             refgenome=WILDCARDS_REF_GENOMES,
             sample=SAMPLES,
-            asm_unit=["asm-hap1", "asm-hap2", "asm-unassigned"]
+            asm_unit=ASSEMBLY_UNITS_MAIN
         )
