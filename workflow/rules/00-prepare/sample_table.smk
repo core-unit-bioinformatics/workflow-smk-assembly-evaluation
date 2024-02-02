@@ -252,3 +252,6 @@ def _collect_files(folder):
 process_sample_sheet()
 
 CONSTRAINT_ALL_SAMPLES = _build_constraint(SAMPLES)
+
+wildcard_constraints:
+    sample = CONSTRAINT_ALL_SAMPLES

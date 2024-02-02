@@ -49,8 +49,6 @@ rule merge_and_tag_asm_units:
         DIR_LOG.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.log"
         )
-    wildcard_constraints:
-        sample = CONSTRAINT_ALL_SAMPLES
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
     resources:
