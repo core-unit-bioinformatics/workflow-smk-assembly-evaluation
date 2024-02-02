@@ -35,7 +35,7 @@ if RUN_REPEATMASKER:
     )
 
 
-if RUN_SEQTK_TELOMERE:
+if True: # TODO: make proper switch RUN_SEQTK_TELOMERE:
 
     ANNOTATION_OUTPUT.extend(
         rules.run_all_seqtk_telomere_motifs.input.tables
