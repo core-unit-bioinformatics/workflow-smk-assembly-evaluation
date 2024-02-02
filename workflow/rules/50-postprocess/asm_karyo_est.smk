@@ -95,8 +95,8 @@ rule build_assembly_karyotype_summary:
     output:
         tsv = expand(
             DIR_RES.joinpath(
-                "reports", "ref_chrom_assign", "{sample_sheet_id}.karyo-est.tsv"),
-                sample_sheet_id=SAMPLE_SHEET_ID
+                "reports", "ref_chrom_assign", "karyo-est{run_id}.tsv"),
+                run_id=RUN_SUFFIX
         )
     run:
         import pandas as pd

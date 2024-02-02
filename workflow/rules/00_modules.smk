@@ -45,6 +45,7 @@ include: "75-completeness/ref_span.smk"
 
 include: "80-statistics/assemblies.smk"
 
+include: "99-aggregate/annotation.smk"
 include: "99-aggregate/completeness.smk"
 include: "99-aggregate/contamination.smk"
 include: "99-aggregate/contig_align.smk"
