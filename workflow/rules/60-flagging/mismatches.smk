@@ -77,7 +77,8 @@ rule apply_basic_quality_filter:
 rule compute_qv_estimate_mismatches:
     input:
         vcf = rules.apply_basic_quality_filter.output.vcf,
-        tbi = rules.apply_basic_quality_filter.output.tbi
+        tbi = rules.apply_basic_quality_filter.output.tbi,
+        bed = rules.generate_ngaps_annotation.output.bed
     output:
         tsv = DIR_RES.joinpath(
             "statistics", "qv_estimates",
@@ -87,8 +88,11 @@ rule compute_qv_estimate_mismatches:
         DIR_ENVS.joinpath("pyseq.yaml")
     params:
         script=find_script("compute_qv")
+    params:
+        acc_res=lambda wildcards, output: register_result(output.tsv)
     shell:
-        "{params.script} --input {input.vcf} --output {output.tsv}"
+        "{params.script} --input {input.vcf} --subtract {input.bed} "
+        "--output {output.tsv}"
 
 
 rule run_all_deepvariant_hifi_mismatches:

@@ -21,6 +21,14 @@ def parse_command_line():
     )
 
     parser.add_argument(
+        "--subtract", "-s",
+        type=lambda x: pl.Path(x).resolve(strict=False),
+        default=None,
+        dest="subtract",
+        help="BED file of regions to ignore when computing the QV estimate."
+    )
+
+    parser.add_argument(
         "--mode", "-m",
         type=str,
         choices=["vcf"],
@@ -85,7 +93,7 @@ def read_vcf_records(input_file):
     return error_counts, contig_lens
 
 
-def process_vcf_errors(error_counts, contig_lengths):
+def process_vcf_errors(error_counts, contig_lengths, subtract_lengths):
 
     out_records = []
     for contig, contig_len in contig_lengths.items():
@@ -94,16 +102,21 @@ def process_vcf_errors(error_counts, contig_lengths):
         if error_bp < 1:
             qv_est = 99
         else:
-            qv_est = compute_qv(error_bp, contig_len)
+            adjusted_length = contig_len - subtract_lengths[contig]
+            assert 0 < adjusted_length <= contig_len
+            qv_est = compute_qv(error_bp, adjusted_length)
         out_records.append(
-            (contig, contig_len, error_bp, qv_est)
+            (contig, contig_len, adjusted_length, error_bp, qv_est)
         )
 
     total_errors = sum(error_counts.values())
     total_length = sum(contig_lengths.values())
-    wg_qv_est = compute_qv(total_errors, total_length)
+    total_subtract = sum(subtract_lengths.values())
+    adjusted_total = total_length - total_subtract
+    assert 0 < adjusted_total <= total_length
+    wg_qv_est = compute_qv(total_errors, adjusted_total)
     out_records.append(
-        ("genome", total_length, total_errors, wg_qv_est)
+        ("genome", total_length, adjusted_total, total_errors, wg_qv_est)
     )
     out_records = sorted(out_records, key=lambda t: t[1], reverse=True)
 
@@ -115,7 +128,8 @@ def dump_by_contig_qv_estimates(out_records, out_file):
     out_file.parent.mkdir(exist_ok=True, parents=True)
 
     df = pd.DataFrame.from_records(
-        out_records, columns=["seq_name", "seq_length", "num_errors", "qv"]
+        out_records,
+        columns=["seq_name", "seq_length", "adj_length", "num_errors", "qv"]
     )
 
     df.to_csv(out_file, sep="\t", header=True, index=False)
@@ -123,10 +137,31 @@ def dump_by_contig_qv_estimates(out_records, out_file):
     return
 
 
-def run_vcf_based_qv_estimate(input_vcf, output_table):
+def read_subtract_lengths(subtract_lengths):
+
+    if subtract_lengths is not None:
+        df = pd.read_csv(
+            subtract_lengths, sep="\t", header=None,
+            comment="#", usecols=[0,1,2]
+        )
+        df.columns = ["contig", "start", "end"]
+        df["length"] = df["end"] - df["start"]
+        subtract_lookup = dict(
+            (k, v) for k, v in df.groupby("contig")["length"].sum().items()
+        )
+        # NB: col.Counter() returns 0 for non-ex keys
+        subtract_lookup = col.Counter(subtract_lookup)
+    else:
+        subtract_lookup = col.Counter()
+
+    return subtract_lookup
+
+
+def run_vcf_based_qv_estimate(input_vcf, output_table, subtract_lengths):
 
     error_counts, contig_lengths = read_vcf_records(input_vcf)
-    out_records = process_vcf_errors(error_counts, contig_lengths)
+    subtract_lengths = read_subtract_lengths(subtract_lengths)
+    out_records = process_vcf_errors(error_counts, contig_lengths, subtract_lengths)
     dump_by_contig_qv_estimates(out_records, output_table)
 
     return
@@ -137,7 +172,7 @@ def main():
     args = parse_command_line()
 
     if args.mode == "vcf":
-        run_vcf_based_qv_estimate(args.input, args.output)
+        run_vcf_based_qv_estimate(args.input, args.output, args.subtract)
     else:
         raise NotImplementedError(args.mode)
 
