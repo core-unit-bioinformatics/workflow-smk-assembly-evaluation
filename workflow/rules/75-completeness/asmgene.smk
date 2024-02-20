@@ -159,7 +159,8 @@ rule asm_completeness_asmgene_process_output:
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
     params:
-        script=find_script("split_asmgene_stats")
+        script=find_script("split_asmgene_stats"),
+        acc_res=lambda wildcards, output: register_result(output.issues, output.stats)
     shell:
         "{params.script} --input {input.txt} "
         "--bed-issues {output.issues} --stats-out {output.stats}"
@@ -178,7 +179,7 @@ rule run_all_asm_completeness_asmgene:
         agg_stats = expand(
             rules.asm_completeness_asmgene_process_output.output.stats,
             sample=SAMPLES,
-            asm_unit=ASSEMBLY_UNITS_SEX_SPECIFIC,
+            asm_unit=ASSEMBLY_UNITS_MAIN,
             refgenome=COMPLETE_REF_GENOME,
             genemodel=WILDCARDS_GENE_MODELS
         )
