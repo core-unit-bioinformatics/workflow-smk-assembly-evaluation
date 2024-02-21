@@ -99,10 +99,10 @@ def process_vcf_errors(error_counts, contig_lengths, subtract_lengths):
     for contig, contig_len in contig_lengths.items():
         # NB: this is a Counter(), default return 0
         error_bp = error_counts[contig]
+        adjusted_length = contig_len - subtract_lengths[contig]
         if error_bp < 1:
             qv_est = 99
         else:
-            adjusted_length = contig_len - subtract_lengths[contig]
             assert 0 < adjusted_length <= contig_len
             qv_est = compute_qv(error_bp, adjusted_length)
         out_records.append(
