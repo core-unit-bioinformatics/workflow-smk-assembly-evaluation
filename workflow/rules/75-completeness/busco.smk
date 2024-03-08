@@ -1,11 +1,11 @@
 
-rule minibusco:
+rule compleasm_busco_mode:
     input:
         asm = rules.compress_clean_assembly_sequences.output.fagz,
         busco_db = DIR_GLOBAL_REF.joinpath("busco_db", "{odb_name}", "{odb_name}.done")
     output:
         check = DIR_PROC.joinpath(
-            "75-completeness", "busco", "{sample}.{asm_unit}.{odb_name}.wd"
+            "75-completeness", "busco", "{sample}.{asm_unit}.{odb_name}.wd",
             "{sample}.{asm_unit}.{odb_name}.ok"
         )
     log:
@@ -29,10 +29,10 @@ rule minibusco:
 
 
 # TODO: make odb db name parameter
-rule run_all_minibusco:
+rule run_all_compleasm:
     input:
         checks = expand(
-            rules.minibusco.output.check,
+            rules.compleasm_busco_mode.output.check,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_MAIN,
             odb_name=["eukaryota_odb10"]
