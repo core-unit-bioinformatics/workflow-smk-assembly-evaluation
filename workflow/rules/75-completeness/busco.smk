@@ -13,7 +13,7 @@ rule compleasm_busco_mode:
     benchmark:
         DIR_RSRC.joinpath("75-completeness", "busco", "{sample}.{asm_unit}.{odb_name}.compleasm.log")
     conda:
-        DIR_ENVS.joinpath("biotools", "compleasm")
+        DIR_ENVS.joinpath("biotools", "compleasm.yaml")
     threads: CPU_LOW
     resources:
         mem_mb = lambda wildcards, attempt: 32768 * attempt,
