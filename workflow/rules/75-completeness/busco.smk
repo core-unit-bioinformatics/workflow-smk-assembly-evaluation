@@ -35,7 +35,7 @@ rule run_all_compleasm:
             rules.compleasm_busco_mode.output.check,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_MAIN,
-            odb_name=["eukaryota_odb10"]
+            odb_name=["eukaryota_odb10", "primates_odb10"]
         )
 
 
