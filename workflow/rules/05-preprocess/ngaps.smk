@@ -1,15 +1,13 @@
 
 rule generate_ngaps_annotation:
     input:
-        asm_units = expand(
-            rules.compress_clean_assembly_sequences.output.fagz,
-            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
-            allow_missing=True
-        )
+        asm_unit = get_asm_unit
     output:
-        bed = DIR_RES.joinpath(
-            "regions", "{sample}",
-            "{sample}.ngaps.bed"
+        bed = temp(
+            DIR_PROC.joinpath(
+                "05-preprocess", "ngaps", "{sample}",
+                "{sample}.{asm_unit}.ngaps.bed"
+            )
         )
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
@@ -18,8 +16,33 @@ rule generate_ngaps_annotation:
     params:
         script=find_script("localize_ngaps")
     shell:
-        "{params.script} --fasta-input {input.asm_units} "
+        "{params.script} --fasta-input {input.asm_unit} "
         "--output {output.bed} --name {wildcards.sample}"
+
+
+localrules: merge_ngaps_annotations
+rule merge_ngaps_annotations:
+    input:
+        tables = expand(
+            rules.generate_ngaps_annotation.output.bed,
+            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
+            allow_missing=True
+        )
+    output:
+        bed = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.ngaps.bed"
+        )
+    run:
+        import pandas as pd
+        merged = []
+        for table in input.tables:
+            df = pd.read_csv(table, sep="\t", header=0)
+            merged.append(df)
+        merged = pd.concat(merged, axis=0, ignore_index=False)
+        merged.sort_values(["#contig", "start"], inplace=True)
+        merged.to_csv(output.bed, sep="\t", header=True, index=False)
+    # END OF RUN BLOCK
 
 
 rule run_all_ngaps_annotation:

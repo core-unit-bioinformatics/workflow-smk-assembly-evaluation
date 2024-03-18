@@ -249,6 +249,39 @@ def _collect_files(folder):
         raise ValueError(f"No input files found underneath {folder}")
     return all_files
 
+
+def get_asm_unit(wildcards):
+    """Function introduced to realize skipping
+    over initial contamination check.
+    """
+    if RUN_NCBI_FCS_ADAPTOR or RUN_NCBI_FCS_GX:
+        path = rules.compress_clean_assembly_sequences.output.fagz
+    else:
+        sample = wildcards.sample
+        asm_unit = wildcards.asm_unit
+        unit_tag = asm_unit.split("-", 1)[1]
+        try:
+            path = SAMPLE_INFOS[sample][("asm", unit_tag, None)]
+            path = pathlib.Path(path).resolve()
+        except KeyError:
+            raise KeyError(f"Assembly unit lookup failed: {sample} / {asm_unit}")
+
+        if not pathlib.Path(path).is_file():
+            raise FileNotFoundError(
+                f"Assembly input file not found: {sample} / {asm_unit} / {path}"
+            )
+        fasta_ext = path.suffix
+        if fasta_ext != ".gz":
+            raise ValueError(
+                f"Assembly FASTA file not compressed and indexed: {sample} / {asm_unit} / {path}\n"
+                "Expecting '.gz' file extension and '.gz.fai' index file."
+            )
+        fai_idx = path.with_suffix(".gz.fai")
+        if not fai_idx.is_file():
+            raise ValueError(f"No FASTA index file found at location: {sample} / {asm_unit} / {fai_idx}")
+    return path
+
+
 process_sample_sheet()
 
 CONSTRAINT_ALL_SAMPLES = _build_constraint(SAMPLES)

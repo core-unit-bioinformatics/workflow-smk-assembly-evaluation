@@ -1,7 +1,7 @@
 
 rule compleasm_busco_mode:
     input:
-        asm = rules.compress_clean_assembly_sequences.output.fagz,
+        asm = get_asm_unit,
         busco_db = DIR_GLOBAL_REF.joinpath("{odb_name}", "{odb_name}.done")
     output:
         check = DIR_PROC.joinpath(

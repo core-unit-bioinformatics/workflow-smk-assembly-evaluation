@@ -1,7 +1,7 @@
 
 rule seqtk_annotate_telomere_motifs:
     input:
-        fasta = rules.compress_clean_assembly_sequences.output.fagz
+        fasta = get_asm_unit
     output:
         table = DIR_PROC.joinpath(
             "70-annotate", "telomeres", "seqtk",

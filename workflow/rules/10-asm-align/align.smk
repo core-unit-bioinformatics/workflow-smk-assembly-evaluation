@@ -8,7 +8,7 @@ rule minimap_assembly_to_reference_align_paf:
     """
     input:
         ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
-        assm = rules.compress_clean_assembly_sequences.output.fagz
+        assm = get_asm_unit
     output:
         paf = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{refgenome}",
@@ -47,7 +47,7 @@ rule normalize_minimap_assembly_to_reference_align_paf:
 rule minimap_assembly_to_reference_align_bam:
     input:
         ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
-        assm = rules.compress_clean_assembly_sequences.output.fagz
+        assm = get_asm_unit
     output:
         bam = DIR_RES.joinpath(
             "alignments", "contig_to_ref", "{refgenome}",
@@ -101,8 +101,10 @@ rule mashmap_assembly_to_reference_align_paf:
     """
     input:
         ref = lambda wildcards: get_reference_assembly(wildcards.sample, wildcards.refgenome),
-        assm = rules.compress_clean_assembly_sequences.output.fagz,
-        idx = rules.compress_clean_assembly_sequences.output.fai,
+        assm = get_asm_unit
+        #idx = rules.compress_clean_assembly_sequences.output.fai,
+        # existence of index is by construction or is enforced
+        # by assembly lookup function / 2024-03-18
     output:
         paf = DIR_PROC.joinpath(
             "10-asm-align", "contig_to_ref", "{refgenome}",

@@ -11,7 +11,7 @@ rule create_plain_assembly_file:
     and can thus make use of Snakemake's temp() wrapper.
     """
     input:
-        fasta = rules.compress_clean_assembly_sequences.output.fagz,
+        fasta = get_asm_unit
     output:
         tmp_fa = temp(
             str(DIR_PROC.joinpath(
