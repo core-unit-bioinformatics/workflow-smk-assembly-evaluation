@@ -48,6 +48,6 @@ rule merge_ngaps_annotations:
 rule run_all_ngaps_annotation:
     input:
         beds = expand(
-            rules.generate_ngaps_annotation.output.bed,
+            rules.merge_ngaps_annotations.output.bed,
             sample=SAMPLES
         )
