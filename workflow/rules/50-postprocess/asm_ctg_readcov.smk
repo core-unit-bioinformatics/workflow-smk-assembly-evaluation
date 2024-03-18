@@ -48,7 +48,9 @@ rule mosdepth_coverage_stats_summary:
             mapq=["00"],
             allow_missing=True
         ),
-        clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        clean_regions = get_clean_assembly_regions
+        #clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        # 2024-03-18: changed to realize skipping over contamination scan
     output:
         stats = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_readcov", "mosdepth",
@@ -121,7 +123,9 @@ rule transform_mosdepth_window_read_coverage:
             mapq=MOSDEPTH_ASSM_READ_COV_MAPQ_THRESHOLDS,
             allow_missing=True
         ),
-        clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        clean_regions = get_clean_assembly_regions
+        #clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        # 2024-03-18: changed to realize skipping over contamination scan
     output:
         hdf = DIR_PROC.joinpath(
             "50-postprocess", "asm_ctg_readcov", "mosdepth",

@@ -9,7 +9,9 @@ rule filter_read_alignments_to_subset:
     input:
         bam = rules.align_reads_to_complete_assembly.output.mapped_bam,
         bai = rules.align_reads_to_complete_assembly.output.mapped_bai,
-        clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        clean_regions = get_clean_assembly_regions
+        #clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        # 2024-03-18: changed to realize skipping over contamination scan
     output:
         bam = DIR_PROC.joinpath(
             "20-read-align", "10_filter_per_file", "{sample}.{read_type}",

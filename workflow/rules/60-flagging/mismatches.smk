@@ -6,7 +6,9 @@ rule deepvariant_read_assm_alignments:
         assm_idx = rules.index_merged_tagged_assembly_fasta.output.fai,
         bam = rules.merge_read_to_assembly_subset_alignments.output.bam,
         bai = rules.merge_read_to_assembly_subset_alignments.output.bai,
-        clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        clean_regions = get_clean_assembly_regions
+        #clean_regions = rules.define_clean_assembly_regions.output.tag_tig
+        # 2024-03-18: changed to realize skipping over contamination scan
     output:
         vcfgz = DIR_PROC.joinpath(
             "60-flagging", "mismatches",

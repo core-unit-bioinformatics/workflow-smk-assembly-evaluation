@@ -75,6 +75,35 @@ rule index_merged_tagged_assembly_fasta:
         "samtools faidx {input.mrg_fasta}"
 
 
+localrules: dump_clean_assembly_regions
+rule dump_clean_assembly_regions:
+    """This rule is the counterpart of
+    'define_clean_assembly_regions' in the
+    'remove_contam.smk' module to be executed
+    in case the initial contamination scanning
+    is skipped.
+    """
+    input:
+        fai = rules.index_merged_tagged_assembly_fasta.output.fai
+    output:
+        bed = DIR_PROC.joinpath(
+            "05-preprocess", "merge_tag_asm", "{sample}.sequences.bed"
+        )
+    run:
+        import pandas as pd
+        df = pd.read_csv(
+            input.fai, sep="\t", usecols=[0,1],
+            header=None, names=["contig", "end"]
+        )
+        df["start"] = 0
+        df = df[["contig", "start", "end"]]
+        df.sort_values("contig", inplace=True)
+        with open(output.bed, "w") as dump:
+            _ = dump.write("#")
+            df.to_csv(dump, sep="\t", header=True, index=False)
+    # END OF RUN BLOCK
+
+
 localrules: create_sed_replacement_files
 rule create_sed_replacement_files:
     input:

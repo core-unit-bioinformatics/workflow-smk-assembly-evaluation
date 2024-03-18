@@ -282,6 +282,18 @@ def get_asm_unit(wildcards):
     return path
 
 
+def get_clean_assembly_regions(wildcards):
+    """Complementing rule above for filter regions
+    processing mosdepth output relative to complete
+    assembly.
+    """
+    if RUN_NCBI_FCS_ADAPTOR or RUN_NCBI_FCS_GX:
+        path = rules.define_clean_assembly_regions.output.tag_tig
+    else:
+        path = rules.dump_clean_assembly_regions.output.bed
+    return path
+
+
 process_sample_sheet()
 
 CONSTRAINT_ALL_SAMPLES = _build_constraint(SAMPLES)
