@@ -2,9 +2,7 @@
 
 rule compute_assembly_sequence_statistics:
     input:
-        fagz = DIR_RES.joinpath(
-            "assemblies", "{sample}", "{sample}.{asm_unit}.fasta.gz"
-        ),
+        fagz = get_asm_unit
     output:
         stats = DIR_RES.joinpath(
             "statistics", "assemblies", "{sample}.{asm_unit}.statistics.tsv.gz"
