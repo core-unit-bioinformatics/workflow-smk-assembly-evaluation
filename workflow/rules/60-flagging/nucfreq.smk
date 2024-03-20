@@ -82,6 +82,24 @@ rule dump_nucfreq_flagged_regions:
     # END OF RUN BLOCK
 
 
+rule annotate_nucfreq_regions_readcov:
+    input:
+        regions = rules.dump_nucfreq_flagged_regions.output.bed,
+        readcov = rules.transform_mosdepth_window_read_coverage.output.hdf
+    output:
+        tsv = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.nucfreq.covann.tsv.gz"
+        )
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
+    params:
+        script=find_script("annotate_region_cov")
+    shell:
+        "{params.script} --regions {input.regions} --read-cov {input.readcov} "
+        "--output {output.tsv}"
+
+
 rule run_all_nucfreq_jobs:
     input:
         hdf = expand(
@@ -91,6 +109,6 @@ rule run_all_nucfreq_jobs:
             aln_subset=["onlyPRI"]
         ),
         regions = expand(
-            rules.dump_nucfreq_flagged_regions.output.bed,
+            rules.annotate_nucfreq_regions_readcov.output.tsv,
             sample=SAMPLES
-        )
+        ),
