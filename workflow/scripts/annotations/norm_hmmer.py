@@ -2,6 +2,7 @@
 
 import argparse as argp
 import collections as col
+import io
 import pathlib as pl
 import sys
 
@@ -171,19 +172,68 @@ def get_motif_info(fasta_file):
     return query_name, query_length
 
 
+def load_table_into_buffer(table_file):
+    """This function exists for the annoying condition
+    that someone used the hash '#' inside of a FASTA
+    header as a delimiter, which cannot be handled
+    by Pandas' comment policy in read_csv:
+    > must be single character, stops parsing anywhere in the line
+
+    Hence, this function loads the entire table into a buffer
+    while ignoring only lines that start with a hash #.
+
+    Args:
+        table_file (pathlib.Path): File path to HMMER output table
+    """
+
+    table_buffer = io.StringIO()
+    with open(table_file, "r") as table:
+        for line in table:
+            if line.startswith("#"):
+                continue
+            if not line.strip():
+                continue
+            table_buffer.write(line)
+    # important to reset the buffer to position 0,
+    # otherwise pandas.read_csv() will result in
+    # empty dataframe
+    table_buffer.seek(0)
+    return table_buffer
+
+
 def normalize_output_table(table_file, query_name, query_length, score_threshold, evalue_threshold):
 
     # note delimiter here: prehistoric style, several ws chars to seperate columns ...
-    df = pd.read_csv(
-        table_file,
-        sep="\s+",
-        header=None,
-        skip_blank_lines=True,
-        comment="#",
-        names=HMMER_TABLE_NAMES,
-        usecols=HMMER_TABLE_USE_COLS,
-        dtype=HMMER_TABLE_DTYPES
-    )
+    # additionally, will fail if hash used as separator --- see function
+    # load_table_into_buffer
+    try:
+        df = pd.read_csv(
+            table_file,
+            sep="\s+",
+            header=None,
+            skip_blank_lines=True,
+            comment="#",
+            names=HMMER_TABLE_NAMES,
+            usecols=HMMER_TABLE_USE_COLS,
+            dtype=HMMER_TABLE_DTYPES
+        )
+    except ValueError:
+        err_msg = (
+            f"\nError parsing file: {table_file}\n"
+            "Standard parsing with pandas.read_csv(... comment='#' ...) failed.\n"
+            "Assuming that '#' was used as part of an identifier in the file.\n"
+            "Loading table into buffer and restart...\n\n"
+        )
+        sys.stderr.write(err_msg)
+        table_buffer = load_table_into_buffer(table_file)
+        df = pd.read_csv(
+            table_buffer,
+            sep="\s+",
+            header=None,
+            names=HMMER_TABLE_NAMES,
+            usecols=HMMER_TABLE_USE_COLS,
+            dtype=HMMER_TABLE_DTYPES
+        )
 
     if df.empty:
         # rare case
@@ -237,7 +287,7 @@ def aggregate_hits_per_target(motif_hits):
             "num_hits_loq": hits.loc[hits["hit_hiq"] == 0, :].shape[0],
         })
         if record["num_hits_hiq"] == 0:
-            # if not high-quality hits were found,
+            # if no high-quality hits were found,
             # add default empty fields
             record["pct_hits_hiq"] = 0
             record["num_bp_hiq"] = 0
