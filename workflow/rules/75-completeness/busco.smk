@@ -81,7 +81,7 @@ rule compleasm_busco_mode:
 rule run_all_compleasm:
     input:
         checks = expand(
-            rules.compleasm_busco_mode.output.check,
+            rules.compleasm_busco_mode.output.summary,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_MAIN,
             odb_name=["eukaryota_odb10", "primates_odb10"]
