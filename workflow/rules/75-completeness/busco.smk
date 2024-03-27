@@ -13,13 +13,13 @@ rule compleasm_list_available_busco_lineages:
     conda:
         DIR_ENVS.joinpath("biotools", "compleasm.yaml")
     shell:
-        "compleasm list --local --library_path {input.busco_db} > {output.lineages}"
+        "compleasm list --local --library_path {input.busco_db} > {output.lineage}"
 
 
 localrules: confirm_busco_lineage_exists
 rule confirm_busco_lineage_exists:
     input:
-        lineages = rules.compleasm_list_available_busco_lineages.output.lineage
+        lineage = rules.compleasm_list_available_busco_lineages.output.lineage
     output:
         exists = DIR_PROC.joinpath(
             "75-completeness", "busco", "lineage_{odb_name}.exists.txt"
@@ -71,12 +71,10 @@ rule compleasm_busco_mode:
         mem_mb = lambda wildcards, attempt: 32768 * attempt,
         time_hrs = lambda wildcards, attempt: attempt * attempt
     params:
-        wd=lambda wildcards, output: pathlib.Path(output.check).parent,
+        wd=lambda wildcards, output: pathlib.Path(output.summary).parent,
     shell:
         "compleasm run --mode busco -L {input.busco_db} -l {wildcards.odb_name} "
         "--threads {threads} -o {params.wd} -a {input.asm} &> {log}"
-            " && "
-        "touch {output.check}"
 
 
 # TODO: make odb db name parameter
