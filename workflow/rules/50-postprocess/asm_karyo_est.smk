@@ -18,6 +18,7 @@ rule estimate_asm_unit_karyotype:
         )
     run:
         import pathlib as pl
+        import io
         import pandas as pd
 
         force_assign_any = False
@@ -48,7 +49,16 @@ rule estimate_asm_unit_karyotype:
                 karyotype = "any"
                 out_records.append((sample, asm_unit, refgenome, karyotype, -1, -1, -1, -1, -1, -1))
                 continue
-            df = pd.read_csv(tsv_file, sep="\t", header=0, comment="#")
+            # 2024-03-27 change here to accommodate sequence names that use
+            # '#' as separator - very annoying ...
+            buffer = io.StringIO()
+            with open(tsv_file, "r") as table:
+                for line in table:
+                    if line.startswith("#") or not line.strip():
+                        continue
+                    buffer.write(line)
+            buffer.seek(0)
+            df = pd.read_csv(buffer, sep="\t", header=0)
             female_score, female_frag, female_contigs = compute_karyotype_score(df, sex_chromosomes["female"])
             male_score, male_frag, male_contigs = compute_karyotype_score(df, sex_chromosomes["male"])
             if female_score > male_score:

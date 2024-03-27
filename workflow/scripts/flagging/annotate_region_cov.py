@@ -66,6 +66,9 @@ def parse_command_line():
 
 def load_regions(regions_file):
 
+    # TODO --- this script is currently executed in the snakemake
+    # execution environment w/o the xopen module. That should be
+    # added and the following simplified w/ xopen
     if regions_file.name.endswith("gz"):
         open_file = gzip.open
         open_mode = "rt"

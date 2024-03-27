@@ -109,6 +109,8 @@ def read_adaptor_report(file_path):
         "adaptor_name"
     ]
 
+    # TODO --- this fails if '#' is used as separator
+    # in any of the identifiers in the input
     df = pd.read_csv(
         file_path, sep="\t", comment="#",
         header=None, names=report_header
@@ -181,6 +183,8 @@ def read_contamination_report(file_path):
         "tax_division"
     ]
 
+    # TODO --- this fails if '#' is used as separator
+    # in any of the identifiers in the input
     df = pd.read_csv(
         file_path, sep="\t", comment="#",
         header=None, names=report_header

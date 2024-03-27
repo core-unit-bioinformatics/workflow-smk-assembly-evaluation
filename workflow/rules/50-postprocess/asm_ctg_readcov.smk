@@ -60,16 +60,26 @@ rule mosdepth_coverage_stats_summary:
         threshold_percentile = 99.5
     run:
         import pathlib as pl
+        import gzip
         import pandas as pd
         import numpy as np
         #import scipy.stats as stats  # Not in default snakemake env
         _this = "50-postprocess::asm_ctg_readcov::summarize_mosdepth_coverage"
 
-        clean_contigs = pd.read_csv(
-            input.clean_regions, sep="\t",
-            comment="#", usecols=[0], header=None
-        )
-        clean_contigs = set(clean_contigs[0])
+        # 2024-03-27 change here to accommodate sequence names that use
+        # '#' as a separator - just annoying ...
+        if str(input.clean_regions).endswith(".gz"):
+            fopen, fmode = gzip.open, "rt"
+        else:
+            fopen, fmode = open, "r"
+
+        clean_contigs = set()
+        with fopen(input.clean_regions, fmode) as listing:
+            for line in listing:
+                if line.startswith("#") or not line.strip():
+                    continue
+                contig = line.split()[0]
+                clean_contigs.add(contig)
 
         assert len(input.check_file) == 1  # expand() returns a NamedList
         summary_file = pl.Path(input.check_file[0]).with_suffix(".mosdepth.summary.txt")
@@ -136,14 +146,25 @@ rule transform_mosdepth_window_read_coverage:
         time_hrs=lambda wildcards, attempt: max(0, attempt - 1)
     run:
         import pathlib as pl
+        import gzip
         import pandas as pd
         import numpy as np
 
-        clean_contigs = pd.read_csv(
-            input.clean_regions, sep="\t",
-            comment="#", usecols=[0], header=None
-        )
-        clean_contigs = set(clean_contigs[0])
+        # 2024-03-27 change here to accommodate sequence names that use
+        # '#' as a separator - just annoying ...
+        if str(input.clean_regions).endswith(".gz"):
+            fopen, fmode = gzip.open, "rt"
+        else:
+            fopen, fmode = open, "r"
+
+        clean_contigs = set()
+        with fopen(input.clean_regions, fmode) as listing:
+            for line in listing:
+                if line.startswith("#") or not line.strip():
+                    continue
+                contig = line.split()[0]
+                clean_contigs.add(contig)
+
 
         aln_subsets = {"onlyPRI": 1, "onlySPL": 0, "onlySEC": 2}
 

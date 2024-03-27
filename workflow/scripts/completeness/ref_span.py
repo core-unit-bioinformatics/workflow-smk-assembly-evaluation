@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse as argp
+import io
 import pathlib as pl
+import sys
 
 import pandas as pd
+import xopen
 
 
 def parse_command_line():
@@ -58,6 +61,35 @@ def parse_command_line():
     return args
 
 
+def load_table_into_buffer(table_file):
+    """This function exists for the annoying condition
+    that someone used the hash '#' inside of a FASTA
+    header as a delimiter, which cannot be handled
+    by Pandas' comment policy in read_csv:
+    > must be single character, stops parsing anywhere in the line
+
+    Hence, this function loads the entire table into a buffer
+    while ignoring only lines that start with a hash #.
+
+    Args:
+        table_file (pathlib.Path): File path to alignments table
+    """
+
+    table_buffer = io.StringIO()
+    with xopen.xopen(table_file, "r") as table:
+        for line in table:
+            if line.startswith("#"):
+                continue
+            if not line.strip():
+                continue
+            table_buffer.write(line)
+    # important to reset the buffer to position 0,
+    # otherwise pandas.read_csv() will result in
+    # empty dataframe
+    table_buffer.seek(0)
+    return table_buffer
+
+
 def select_spanning_alignments(alignments):
     """Select reference/chromosome spanning alignments
     in a greedy fashion:
@@ -67,7 +99,19 @@ def select_spanning_alignments(alignments):
         alignments (pandas.DataFrame): Mashmap normalized approx. alignments
     """
 
-    df = pd.read_csv(alignments, sep="\t", comment="#", header=0)
+    try:
+        df = pd.read_csv(alignments, sep="\t", comment="#", header=0)
+    except ValueError:
+        err_msg = (
+            f"\nError parsing file: {alignments}\n"
+            "Standard parsing with pandas.read_csv(... comment='#' ...) failed.\n"
+            "Assuming that '#' was used as part of an identifier in the file.\n"
+            "Loading table into buffer and restart...\n\n"
+        )
+        sys.stderr.write(err_msg)
+        table_buffer = load_table_into_buffer(alignments)
+        df = pd.read_csv(table_buffer, sep="\t", header=0)
+
     main_chroms = df["target_name"].str.match("[chr0-9A-Z]+$")
     df = df.loc[main_chroms, :].copy()
 

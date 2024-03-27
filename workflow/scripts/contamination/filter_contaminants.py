@@ -88,6 +88,8 @@ def parse_command_line():
 
 def read_screening_reports(args):
 
+    # TODO --- this fails if '#' is used as separator
+    # in any of the identifiers in the input
     adapter = pd.read_csv(args.adapter_table, sep="\t", comment="#")
     adapter_pass = set(adapter.loc[adapter["action"] == "PASS", "name"].values)
 

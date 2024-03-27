@@ -97,6 +97,35 @@ def write_output(assignments, column_order, outfile, outheader):
     return
 
 
+def load_table_into_buffer(table_file):
+    """This function exists for the annoying condition
+    that someone used the hash '#' inside of a FASTA
+    header as a delimiter, which cannot be handled
+    by Pandas' comment policy in read_csv:
+    > must be single character, stops parsing anywhere in the line
+
+    Hence, this function loads the entire table into a buffer
+    while ignoring only lines that start with a hash #.
+
+    Args:
+        table_file (pathlib.Path): File path to alignment table
+    """
+
+    table_buffer = io.StringIO()
+    with xopen.xopen(table_file, "r") as table:
+        for line in table:
+            if line.startswith("#"):
+                continue
+            if not line.strip():
+                continue
+            table_buffer.write(line)
+    # important to reset the buffer to position 0,
+    # otherwise pandas.read_csv() will result in
+    # empty dataframe
+    table_buffer.seek(0)
+    return table_buffer
+
+
 def main():
 
     args = parse_command_line()
@@ -109,10 +138,26 @@ def main():
         "tp_align_type"
     ]
 
-    alignments = pd.read_csv(
-        args.input, sep="\t", header=0,
-        usecols=load_columns, comment="#"
-    )
+    # 2024-03-27 the following to accommodate inputs that contain
+    # identifiers that use # as separators - yes, they exist ...
+    try:
+        alignments = pd.read_csv(
+            args.input, sep="\t", header=0,
+            usecols=load_columns, comment="#"
+        )
+    except ValueError:
+        err_msg = (
+            f"\nError parsing file: {args.input}\n"
+            "Standard parsing with pandas.read_csv(... comment='#' ...) failed.\n"
+            "Assuming that '#' was used as part of an identifier in the file.\n"
+            "Loading table into buffer and restart...\n\n"
+        )
+        sys.stderr.write(err_msg)
+        table_buffer = load_table_into_buffer(args.input)
+        alignments = pd.read_csv(
+            table_buffer, sep="\t", header=0,
+            usecols=load_columns
+        )
 
     out_info_header = io.StringIO()
     out_info_header.write(
