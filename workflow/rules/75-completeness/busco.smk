@@ -26,12 +26,12 @@ rule confirm_busco_lineage_exists:
         )
     run:
         lineage_found = False
-        with open(input.lineages, "r") as listing:
+        with open(input.lineage, "r") as listing:
             first_line = listing.readline()
             if not first_line.startswith("Local available lineages"):
                 err_msg = (
                     "Unexpected first line in compleasm / busco lineage file:\n"
-                    f"{input.lineages}\n"
+                    f"{input.lineage}\n"
                     f"First line: {first_line.strip()}"
                 )
                 logerr(err_msg)
