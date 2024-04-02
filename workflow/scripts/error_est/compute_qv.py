@@ -169,6 +169,13 @@ def load_table_into_buffer(table_file):
     return table_buffer
 
 
+def check_table_is_likely_empty(table):
+
+    num_nan = pd.isnull(table).all(axis=0)
+    if num_nan.any():
+        raise ValueError("Table is likely empty / malformed")
+    return
+
 
 def read_subtract_lengths(subtract_lengths):
 
@@ -180,6 +187,7 @@ def read_subtract_lengths(subtract_lengths):
                 subtract_lengths, sep="\t", header=None,
                 comment="#", usecols=[0,1,2]
             )
+            check_table_is_likely_empty(df)
         except ValueError:
             err_msg = (
                 f"\nError parsing file: {subtract_lengths}\n"
