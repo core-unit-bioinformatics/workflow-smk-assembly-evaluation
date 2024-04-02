@@ -58,6 +58,8 @@ hmmer_motif_search:
   DYZ3-sec_Ycentro:
     score_t: 1700
     evalue_t: '1.60E-150'
+    scale_time: 4
+    scale_mem: 2
 
 # TODO - move into project-specific config
 # the TSPY motif is too large to scan entire genomes;
