@@ -80,7 +80,7 @@ rule compute_qv_estimate_mismatches:
     input:
         vcf = rules.apply_basic_quality_filter.output.vcf,
         tbi = rules.apply_basic_quality_filter.output.tbi,
-        bed = rules.generate_ngaps_annotation.output.bed
+        bed = rules.merge_ngaps_annotations.output.bed
     output:
         tsv = DIR_RES.joinpath(
             "statistics", "qv_estimates",
