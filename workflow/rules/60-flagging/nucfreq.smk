@@ -93,6 +93,8 @@ rule annotate_nucfreq_regions_readcov:
         )
     resources:
         mem_mb=lambda wildcards, attempt: 1024 * attempt
+    conda:
+        DIR_ENVS.joinpath("pyutils.yaml")
     params:
         script=find_script("annotate_region_cov")
     shell:
