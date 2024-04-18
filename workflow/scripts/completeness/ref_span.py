@@ -90,6 +90,14 @@ def load_table_into_buffer(table_file):
     return table_buffer
 
 
+def check_table_is_likely_empty(table):
+
+    num_nan = pd.isnull(table).all(axis=0)
+    if num_nan.any():
+        raise ValueError("Table is likely empty / malformed")
+    return
+
+
 def select_spanning_alignments(alignments):
     """Select reference/chromosome spanning alignments
     in a greedy fashion:
@@ -101,6 +109,7 @@ def select_spanning_alignments(alignments):
 
     try:
         df = pd.read_csv(alignments, sep="\t", comment="#", header=0)
+        check_table_is_likely_empty(df)
     except ValueError:
         err_msg = (
             f"\nError parsing file: {alignments}\n"
