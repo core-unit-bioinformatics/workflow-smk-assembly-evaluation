@@ -7,6 +7,7 @@ import math
 import pathlib as pl
 
 import pandas as pd
+from pandas.errors import EmptyDataError
 import pysam
 import sys
 import xopen
@@ -188,7 +189,7 @@ def read_subtract_lengths(subtract_lengths):
                 comment="#", usecols=[0,1,2]
             )
             check_table_is_likely_empty(df)
-        except ValueError:
+        except (ValueError, EmptyDataError):
             err_msg = (
                 f"\nError parsing file: {subtract_lengths}\n"
                 "Standard parsing with pandas.read_csv(... comment='#' ...) failed.\n"
@@ -197,15 +198,19 @@ def read_subtract_lengths(subtract_lengths):
             )
             sys.stderr.write(err_msg)
             table_buffer = load_table_into_buffer(subtract_lengths)
-            df = pd.read_csv(table_buffer, sep="\t", header=None, usecols=[0,1,2])
-
-        df.columns = ["contig", "start", "end"]
-        df["length"] = df["end"] - df["start"]
-        subtract_lookup = dict(
-            (k, v) for k, v in df.groupby("contig")["length"].sum().items()
-        )
-        # NB: col.Counter() returns 0 for non-ex keys
-        subtract_lookup = col.Counter(subtract_lookup)
+            try:
+                df = pd.read_csv(table_buffer, sep="\t", header=None, usecols=[0,1,2])
+            except EmptyDataError:
+                # in which case, assume that the input was intentionally empty
+                subtract_lookup = col.Counter()
+            else:
+                df.columns = ["contig", "start", "end"]
+                df["length"] = df["end"] - df["start"]
+                subtract_lookup = dict(
+                    (k, v) for k, v in df.groupby("contig")["length"].sum().items()
+                )
+                # NB: col.Counter() returns 0 for non-ex keys
+                subtract_lookup = col.Counter(subtract_lookup)
     else:
         subtract_lookup = col.Counter()
 
