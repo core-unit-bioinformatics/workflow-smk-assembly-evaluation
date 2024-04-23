@@ -77,14 +77,77 @@ rule compleasm_busco_mode:
         "--threads {threads} -o {params.wd} -a {input.asm} &> {log}"
 
 
+localrules: normalize_compleasm_summary
+rule normalize_compleasm_summary:
+    input:
+        txt = rules.compleasm_busco_mode.output.summary
+    output:
+        tsv = DIR_PROC.joinpath(
+            "75-completeness", "busco", "{sample}.{asm_unit}.{odb_name}.compleasm-summary.tsv",
+        )
+    run:
+        stats_map = {
+            "S": "singleton", "D": "duplicated", "F": "fragmented",
+            "I": "interspersed", "M": "missing", "N": "total"
+        }
+        data_row = [wildcards.sample, wildcards.asm_unit, wildcards.odb_name]
+        header_row = ["sample", "asm_unit", "odb_name"]
+        with open(input.txt, "r") as text:
+            for line in text:
+                if line.startswith("#"):
+                    assert wildcards.odb_name in line
+                if line.startswith("N"):
+                    percentage = 100.
+                    statistic, count = line.strip().split(":")
+                else:
+                    statistic, count = line.strip().split()
+                    count = int(count.strip())
+                    statistic, percentage = statistic.split(":")
+                    percentage = float(percentage.strip("%"))
+                stat_name = stats_map[statistic]
+                header_row.append(stat_name + "_count")
+                data_row.append(count)
+                header_row.append(stat_name + "_pct")
+                data_row.append(percentage)
+        with open(output.tsv, "w") as table:
+            _ = table.write("\t".join(header_row) + "\n")
+            _ = table.write("\t".join(data_row) + "\n")
+    # END OF RUN BLOCK
+
+
+localrules: aggregate_compleasm_summaries
+rule aggregate_compleasm_summaries:
+    input:
+        tsv = expand(
+            rules.normalize_compleasm_summary.ouput.tsv,
+            sample=SAMPLES,
+            asm_unit=ASSEMBLY_UNITS_MAIN,
+            allow_missing=True
+        )
+    output:
+        tsv = DIR_RES.joinpath(
+            "reports", "completeness", "busco.{odb_name}.{run_id}.tsv"
+        )
+    run:
+        import pandas as pd
+
+        concat = []
+        for table_file in input.tsv:
+            df = pd.read_csv(table_file, sep="\t", header=0)
+            concat.append(df)
+        concat = pd.concat(concat, axis=0, ignore_index=False)
+        concat.sort_values(["sample", "asm_unit"], inplace=True)
+        concat.to_csv(output.tsv, sep="\t", header=True, index=False)
+    # END OF RUN BLOCK
+
+
 # TODO: make odb db name parameter
 rule run_all_compleasm:
     input:
-        checks = expand(
-            rules.compleasm_busco_mode.output.summary,
-            sample=SAMPLES,
-            asm_unit=ASSEMBLY_UNITS_MAIN,
-            odb_name=["eukaryota_odb10", "primates_odb10"]
+        report = expand(
+            rules.aggregate_compleasm_summaries.output.tsv,
+            odb_name=["eukaryota_odb10", "primates_odb10"],
+            run_id=RUN_SUFFIX
         )
 
 
