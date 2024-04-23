@@ -85,6 +85,8 @@ rule normalize_compleasm_summary:
         tsv = DIR_PROC.joinpath(
             "75-completeness", "busco", "{sample}.{asm_unit}.{odb_name}.compleasm-summary.tsv",
         )
+    wildcard_constraints:
+        asm_unit="(" + "|".join(ASSEMBLY_UNITS_MAIN) + ")"
     run:
         stats_map = {
             "S": "singleton", "D": "duplicated", "F": "fragmented",
