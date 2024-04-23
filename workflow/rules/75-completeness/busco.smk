@@ -119,7 +119,7 @@ localrules: aggregate_compleasm_summaries
 rule aggregate_compleasm_summaries:
     input:
         tsv = expand(
-            rules.normalize_compleasm_summary.ouput.tsv,
+            rules.normalize_compleasm_summary.output.tsv,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_MAIN,
             allow_missing=True
