@@ -119,16 +119,18 @@ rule normalize_compleasm_summary:
 
 localrules: aggregate_compleasm_summaries
 rule aggregate_compleasm_summaries:
+    """URGENT TODO --- odb names as parameter!
+    """
     input:
         tsv = expand(
             rules.normalize_compleasm_summary.output.tsv,
             sample=SAMPLES,
             asm_unit=ASSEMBLY_UNITS_MAIN,
-            allow_missing=True
+            odb_name=["eukaryota_odb10", "primates_odb10"]
         )
     output:
         tsv = DIR_RES.joinpath(
-            "reports", "completeness", "busco.{odb_name}{run_id}.tsv"
+            "reports", "completeness", "busco-summary{run_id}.tsv"
         )
     run:
         import pandas as pd
@@ -148,7 +150,6 @@ rule run_all_compleasm:
     input:
         report = expand(
             rules.aggregate_compleasm_summaries.output.tsv,
-            odb_name=["eukaryota_odb10", "primates_odb10"],
             run_id=RUN_SUFFIX
         )
 
