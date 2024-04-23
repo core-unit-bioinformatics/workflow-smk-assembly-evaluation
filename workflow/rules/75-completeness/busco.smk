@@ -102,7 +102,7 @@ rule normalize_compleasm_summary:
                     percentage = 100.
                     statistic, count = line.strip().split(":")
                 else:
-                    statistic, count = line.strip().split()
+                    statistic, count = line.strip().split(",")
                     count = int(count.strip())
                     statistic, percentage = statistic.split(":")
                     percentage = float(percentage.strip("%"))
