@@ -98,6 +98,7 @@ rule normalize_compleasm_summary:
             for line in text:
                 if line.startswith("#"):
                     assert wildcards.odb_name in line
+                    continue
                 if line.startswith("N"):
                     percentage = 100.
                     statistic, count = line.strip().split(":")
