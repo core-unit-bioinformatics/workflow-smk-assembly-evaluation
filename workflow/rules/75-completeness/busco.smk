@@ -109,9 +109,9 @@ rule normalize_compleasm_summary:
                     percentage = float(percentage.strip("%"))
                 stat_name = stats_map[statistic]
                 header_row.append(stat_name + "_count")
-                data_row.append(count)
+                data_row.append(str(count))
                 header_row.append(stat_name + "_pct")
-                data_row.append(percentage)
+                data_row.append(str(percentage))
         with open(output.tsv, "w") as table:
             _ = table.write("\t".join(header_row) + "\n")
             _ = table.write("\t".join(data_row) + "\n")
