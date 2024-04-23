@@ -126,7 +126,7 @@ rule aggregate_compleasm_summaries:
         )
     output:
         tsv = DIR_RES.joinpath(
-            "reports", "completeness", "busco.{odb_name}.{run_id}.tsv"
+            "reports", "completeness", "busco.{odb_name}{run_id}.tsv"
         )
     run:
         import pandas as pd
