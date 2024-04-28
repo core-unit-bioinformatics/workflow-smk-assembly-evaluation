@@ -397,6 +397,8 @@ def dump_output_file(regions, file_path, bed_like, add_desc):
         with xopen.xopen(file_path, "w") as dump:
             _ = dump.write("\n".join(label_descriptions) + "\n")
             regions.to_csv(dump, sep="\t", header=True, index=False)
+    else:
+        regions.to_csv(file_path, sep="\t", header=True, index=False)
     return
 
 
