@@ -9,6 +9,7 @@ import pathlib as pl
 import sys
 
 import pandas as pd
+import xopen
 
 __PYTHON_VERSION = sys.version_info
 if __PYTHON_VERSION.major < 3 and __PYTHON_VERSION.minor < 10:
@@ -95,20 +96,97 @@ def parse_command_line():
         dest="dump_bed_like"
     )
 
+    parser.add_argument(
+        "--add-label-description", "-ald",
+        action="store_true",
+        default=False,
+        dest="add_descriptions",
+        help="Add label descriptions to output prefixed with '#' (top of output file)."
+    )
+
+    parser.add_argument(
+        "--show-label-description",
+        "--verbose",
+        action="store_true",
+        default=False,
+        dest="show_descriptions"
+    )
+
     args = parser.parse_args()
+
+    if args.show_descriptions:
+        sys.stdout.write("\nAlignment label descriptions:\n")
+        rows = get_complement_class_help(" ---> ")
+        sys.stdout.write("\n".join(rows) + "\n\n")
+        sys.exit(0)
+
     return args
+
+
+
+def get_complement_class_help(prefix=""):
+
+    label_descriptions = {
+        1: (
+            "UNALN: no sequence alignment between target and query in this region. "
+            "There is no unique cause to explain this gap in the alignment. "
+            "This label typically occurs at the start and end of the target sequence."
+        ),
+        2: (
+            "SCONTAIN: self-containment; there is another alignment from the same (!) "
+            "query sequence that is fully contained in an alignment of identical or "
+            "larger size."
+        ),
+        3: (
+            "XCONTAIN: cross-containment; there is another alignment from a different (!) "
+            "query sequence that is fully contained in an alignment of identical or "
+            "larger size."
+        ),
+        4: (
+            "BRKOVL: break with overlap; there are overlapping alignments from two different "
+            "query sequences. This could indicate a discontinuity in the query, but the correct "
+            "interpretation also depends on the correctness of the alignment itself."
+        ),
+        5: (
+            "ALNGAP: break in the alignment within the query sequence. This could result from, e.g., "
+            "an actual gap [unresolved sequence / N] in the query, a genuine sequence variant "
+            "[e.g., large insertion in the query] or from a difficult sequence context to align to "
+            "that led to a gapped alignment."
+        ),
+        6: (
+            "BRKSEQ: break in the alignment between two different query sequences. This has the "
+            "same interpretation (including caveats) as the label 'BRKOVL' except that for BRKSEQ, "
+            "the alignment blocks are interspersed and not overlapping."
+        )
+    }
+
+    rows = []
+    for label in ComplementLabel:
+        help_text = label_descriptions[label.value]
+        rows.append(f"{prefix}{label.value}. {help_text}")
+
+    return rows
 
 
 def load_alignments(tsv_file):
 
+    # this matches the minimap2 contig-to-ref alignments
     keep_columns = [
         "query_name", "query_length", "query_start", "query_end",
         "target_name", "target_length", "target_start", "target_end",
         "align_orient", "align_total", "mapq", "tp_align_type"
     ]
-
-    aln = pd.read_csv(tsv_file, sep="\t", header=0, usecols=keep_columns)
-    aln = aln.loc[aln["tp_align_type"] != 2, :].copy()
+    try:
+        aln = pd.read_csv(tsv_file, sep="\t", header=0, usecols=keep_columns)
+        aln = aln.loc[aln["tp_align_type"] != 2, :].copy()
+    except ValueError as verr:
+        err_msg = str(verr)
+        if "tp_align_type" not in err_msg:
+            raise verr
+        # this now matches the mashmap contig-to-ref alignments
+        # here, all alignments are "primary"
+        keep_columns = keep_columns[:-1]
+        aln = pd.read_csv(tsv_file, sep="\t", header=0, usecols=keep_columns)
 
     return aln
 
@@ -309,6 +387,19 @@ def build_dataframes(segments, seq_sizes, order_by, context_label, delim):
     return all_regions, complement_only
 
 
+def dump_output_file(regions, file_path, bed_like, add_desc):
+
+    file_path.parent.mkdir(exist_ok=True, parents=True)
+    if bed_like:
+        regions.rename({"seq_name": "#seq_name"}, axis=1, inplace=True)
+    if add_desc:
+        label_descriptions = get_complement_class_help("# ")
+        with xopen.xopen(file_path, "w") as dump:
+            _ = dump.write("\n".join(label_descriptions) + "\n")
+            regions.to_csv(dump, sep="\t", header=True, index=False)
+    return
+
+
 def main():
 
     args = parse_command_line()
@@ -330,16 +421,16 @@ def main():
     )
 
     if args.out_target_all is not None:
-        args.out_target_all.parent.mkdir(exist_ok=True, parents=True)
-        if args.dump_bed_like:
-            target_regions.rename({"seq_name": "#seq_name"}, axis=1, inplace=True)
-        target_regions.to_csv(args.out_target_all, sep="\t", header=True, index=False)
+        dump_output_file(
+            target_regions, args.out_target_all,
+            args.dump_bed_like, args.add_descriptions
+        )
 
     if args.out_target_complement is not None:
-        args.out_target_complement.parent.mkdir(exist_ok=True, parents=True)
-        if args.dump_bed_like:
-            target_complements.rename({"seq_name": "#seq_name"}, axis=1, inplace=True)
-        target_complements.to_csv(args.out_target_complement, sep="\t", header=True, index=False)
+        dump_output_file(
+            target_complements, args.out_target_complement,
+            args.dump_bed_like, args.add_descriptions
+        )
 
     query_regions, query_complements = build_dataframes(
         query_segments, query_seq_sizes, "size",
@@ -347,16 +438,16 @@ def main():
     )
 
     if args.out_query_all is not None:
-        args.out_query_all.parent.mkdir(exist_ok=True, parents=True)
-        if args.dump_bed_like:
-            query_regions.rename({"seq_name": "#seq_name"}, axis=1, inplace=True)
-        query_regions.to_csv(args.out_query_all, sep="\t", header=True, index=False)
+        dump_output_file(
+            query_regions, args.out_query_all,
+            args.dump_bed_like, args.add_descriptions
+        )
 
     if args.out_query_complement is not None:
-        args.out_query_complement.parent.mkdir(exist_ok=True, parents=True)
-        if args.dump_bed_like:
-            query_complements.rename({"seq_name": "#seq_name"}, axis=1, inplace=True)
-        query_complements.to_csv(args.out_query_complement, sep="\t", header=True, index=False)
+        dump_output_file(
+            query_complements, args.out_query_complement,
+            args.dump_bed_like, args.add_descriptions
+        )
 
     return 0
 

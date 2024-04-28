@@ -100,3 +100,25 @@ def get_reference_genome(refgenome, sex="any"):
         matched_ref = config["refgenomes"][refgenome]["any"]
     ref_path = DIR_GLOBAL_REF.joinpath(matched_ref)
     return ref_path
+
+
+def get_contig_to_reference_norm_paf(wildcards):
+
+    _this_func = "75-completeness::pyutils::get_contig_to_reference_norm_paf"
+
+    assert hasattr(wildcards, "aln_type"), f"Invalid wildcards - no 'aln_type': {_this_func} / {wildcards}"
+
+    if wildcards.aln_type == "blevel":
+        norm_paf = rules.normalize_minimap_assembly_to_reference_align_paf.output.tsv
+    elif wildcards.aln_type == "coarse":
+        norm_paf = rules.normalize_mashmap_assembly_to_reference_align_paf.output.tsv
+    else:
+        err_msg = (
+            f"ERROR in function: {_this_func}\n"
+            "Expected value 'blevel' or 'coarse' for wildcard 'aln_type'\n"
+            f"Received: {wildcards.aln_type} / {wildcards}"
+        )
+        logerr(err_msg)
+        raise ValueError(err_msg)
+
+    return norm_paf
