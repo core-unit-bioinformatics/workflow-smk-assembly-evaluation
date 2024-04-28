@@ -43,6 +43,7 @@ include: "75-completeness/pyutils.smk"
 include: "75-completeness/asmgene.smk"
 include: "75-completeness/busco.smk"
 include: "75-completeness/ref_span.smk"
+include: "75-completeness/breaks.smk"
 
 include: "80-statistics/assemblies.smk"
 
