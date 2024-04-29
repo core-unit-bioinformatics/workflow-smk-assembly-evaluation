@@ -90,6 +90,14 @@ def parse_command_line():
     )
 
     parser.add_argument(
+        "--skip-aln-gap-size",
+        type=int,
+        default=10,
+        dest="skip_aln_gap",
+        help="Skip over regions of type ALNGAP if they are smaller than this. Default: 10 bp"
+    )
+
+    parser.add_argument(
         "--dump-bed-like", "-bed",
         action="store_true",
         default=False,
@@ -208,7 +216,7 @@ def a_overlaps_b(segment_a, segment_b):
     return segment_b.start < segment_a.end
 
 
-def build_segment_complements(sequence_length, segments, aln_context, delim):
+def build_segment_complements(sequence_length, segments, skip_aln_gap, aln_context, delim):
 
     complements = []
     if segments[0].start > 0:
@@ -265,7 +273,17 @@ def build_segment_complements(sequence_length, segments, aln_context, delim):
             # indicate unresolved sequence / N-gap
             context_label = f"{aln_context}{delim}{segment_a.label}"
             gap_start, gap_end = segment_a.end, segment_b.start
+            if (gap_end - gap_start) < skip_aln_gap:
+                # FIX (?): mashmap produces a lot of 1-bp ALNGAPs, presumably
+                # due to the coarse-grained alignment strategy that operates
+                # on (large) sequence windows with blunt ends. Hence, as long
+                # as the coordinates are consecutive, assume that there is no
+                # actual gap: unresolved / N sequence or a large insertion in
+                # the query cannot result in consecutive coordinates.
+                # Introduce new cli parameter 'skip-aln-gap' to handle those cases.
+                continue
             if gap_start == gap_end:
+                # in case 1-bp gaps are not skipped, set them to size 1
                 gap_end += 1  # this is mainly to allow intersect ops.
             complements.append(
                 Complement(
@@ -339,7 +357,7 @@ def determine_sequence_segments(alignments, target_label, query_label, delimiter
     return target_segments, target_seq_sizes, query_segments, query_seq_sizes
 
 
-def build_dataframes(segments, seq_sizes, order_by, context_label, delim):
+def build_dataframes(segments, seq_sizes, skip_aln_gap, order_by, context_label, delim):
 
     all_regions = []
     complement_only = []
@@ -351,7 +369,10 @@ def build_dataframes(segments, seq_sizes, order_by, context_label, delim):
         df["seq_name"] = seq
         df["seq_size"] = seq_sizes[seq]
         all_regions.append(df)
-        seq_complements = build_segment_complements(seq_sizes[seq], seq_segments, context_label, delim)
+        seq_complements = build_segment_complements(
+            seq_sizes[seq], seq_segments,
+            skip_aln_gap, context_label, delim
+        )
         df = pd.DataFrame.from_records(
             seq_complements, columns=["start", "end", "name", "aln_context", "length", "block_id"]
         )
@@ -418,8 +439,8 @@ def main():
     query_segments, query_seq_sizes = segment_info[2:]
 
     target_regions, target_complements = build_dataframes(
-        target_segments, target_seq_sizes, "lexorder",
-        query_label, args.delim
+        target_segments, target_seq_sizes, args.skip_aln_gap,
+        "lexorder", query_label, args.delim
     )
 
     if args.out_target_all is not None:
@@ -435,8 +456,8 @@ def main():
         )
 
     query_regions, query_complements = build_dataframes(
-        query_segments, query_seq_sizes, "size",
-        target_label, args.delim
+        query_segments, query_seq_sizes, args.skip_aln_gap,
+        "size", target_label, args.delim
     )
 
     if args.out_query_all is not None:
