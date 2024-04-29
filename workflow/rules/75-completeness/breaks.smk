@@ -19,12 +19,12 @@ rule find_contig_alignment_breaks:
             "75-completeness", "breaks", "{refgenome}",
             "{sample}.{asm_unit}.{refgenome}.{aln_type}.ctgaln-label.trg-breaks.bed.gz"
         ),
-        qry_all = DIR_RES.joinpath(
-            "regions", "{sample}",
+        qry_all = DIR_PROC.joinpath(
+            "75-completeness", "breaks", "{refgenome}",
             "{sample}.{asm_unit}.{refgenome}.{aln_type}.ctgaln-label.qry-all.bed.gz"
         ),
-        qry_cmp = DIR_RES.joinpath(
-            "regions", "{sample}",
+        qry_cmp = DIR_PROC.joinpath(
+            "75-completeness", "breaks", "{refgenome}",
             "{sample}.{asm_unit}.{refgenome}.{aln_type}.ctgaln-label.qry-breaks.bed.gz"
         ),
     wildcard_constraints:
@@ -47,6 +47,38 @@ rule find_contig_alignment_breaks:
         "--out-query-all {output.qry_all} --out-query-complement {output.qry_cmp} "
 
 
+rule intersect_blevel_coarse_alignment_blocks:
+    """Since all alignment blocks in the PAF files
+    are identifiable via the MD5 hash, the orientation
+    (target vs query) only marginally matters (most likely
+    for the sequence/chromosome ends). We compute open/closed
+    regions nevertheless for both views to increase confidence
+    in final labeling.
+    """
+    input:
+        blevel = DIR_PROC.joinpath(
+            "75-completeness", "breaks", "{refgenome}",
+            "{sample}.{asm_unit}.{refgenome}.blevel.ctgaln-label.{view}-all.bed.gz"
+        ),
+        coarse = DIR_PROC.joinpath(
+            "75-completeness", "breaks", "{refgenome}",
+            "{sample}.{asm_unit}.{refgenome}.coarse.ctgaln-label.{view}-all.bed.gz"
+        ),
+    output:
+        isect = DIR_PROC.joinpath(
+            "75-completeness", "breaks", "{refgenome}", "intersects",
+            "{sample}.{asm_unit}.{refgenome}.ctgaln-label.{view}-all.isect.tsv.gz"
+        ),
+    wildcard_constraints:
+        view="(trg|qry)"
+    conda:
+        DIR_ENVS.joinpath("biotools", "bedtools.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
+    shell:
+        "bedtools intersect -wo -a {input.blevel} -b {input.coarse} | gzip > {output.isect}"
+
+
 rule run_all_label_contig_alignments:
     input:
         ctgaln_labeled = expand(
@@ -55,4 +87,11 @@ rule run_all_label_contig_alignments:
             asm_unit=ASSEMBLY_UNITS_MAIN,
             refgenome=WILDCARDS_REF_GENOMES,
             aln_type=["blevel", "coarse"]
+        ),
+        isect = expand(
+            rules.intersect_blevel_coarse_alignment_blocks.output.isect,
+            sample=SAMPLES,
+            asm_unit=ASSEMBLY_UNITS_MAIN,
+            refgenome=WILDCARDS_REF_GENOMES,
+            view=["trg", "qry"]
         )
