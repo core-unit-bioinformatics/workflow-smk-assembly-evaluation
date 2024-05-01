@@ -1,4 +1,25 @@
 
+rule annotate_ngaps_in_reference:
+    """This rule was introduced to ensure that also
+    N gaps in the reference (hg38 etc.) are properly
+    considered in the module
+    75-completeness::breaks.smk
+    """
+    input:
+        fasta = lambda wildcards: DIR_GLOBAL_REF.joinpath(config["refgenomes"][wildcards.reference]["any"])
+    output:
+        bed = DIR_LOCAL_REF.joinpath("{reference}.ngaps.bed")
+    conda:
+        DIR_ENVS.joinpath("pyseq.yaml")
+    resources:
+        mem_mb=lambda wildcards, attempt: 1024 * attempt
+    params:
+        script=find_script("localize_ngaps")
+    shell:
+        "{params.script} --fasta-input {input.asm_unit} "
+        "--output {output.bed} --name {wildcards.sample}"
+
+
 rule generate_ngaps_annotation:
     input:
         asm_unit = get_asm_unit

@@ -79,6 +79,29 @@ rule intersect_blevel_coarse_alignment_blocks:
         "bedtools intersect -wo -a {input.blevel} -b {input.coarse} | gzip > {output.isect}"
 
 
+# TODO - finalize
+# rule merge_gaps_alignment_blocks:
+#     input:
+#         qry_view = expand(
+#             rules.intersect_blevel_coarse_alignment_blocks.output.isect,
+#             view="qry",
+#             allow_missing=True
+#         ),
+#         qry_ngap = rules.merge_ngaps_annotations.output.bed,
+#         trg_view = expand(
+#             rules.intersect_blevel_coarse_alignment_blocks.output.isect,
+#             view="trg",
+#             allow_missing=True
+#         ),
+#         trg_ngap = rules.annotate_ngaps_in_reference.output.bed
+#     output:
+
+#     conda:
+#         DIR_ENVS.joinpath()
+#     params:
+#         script=find_script()
+
+
 rule run_all_label_contig_alignments:
     input:
         ctgaln_labeled = expand(
