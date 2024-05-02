@@ -6,9 +6,9 @@ rule annotate_ngaps_in_reference:
     75-completeness::breaks.smk
     """
     input:
-        fasta = lambda wildcards: DIR_GLOBAL_REF.joinpath(config["refgenomes"][wildcards.reference]["any"])
+        fasta = lambda wildcards: DIR_GLOBAL_REF.joinpath(config["refgenomes"][wildcards.refgenome]["any"])
     output:
-        bed = DIR_LOCAL_REF.joinpath("{reference}.ngaps.bed")
+        bed = DIR_LOCAL_REF.joinpath("{refgenome}.ngaps.bed")
     conda:
         DIR_ENVS.joinpath("pyseq.yaml")
     resources:
