@@ -108,10 +108,10 @@ rule merge_gaps_alignment_blocks:
         script=find_script("merge_alignments")
     shell:
         "{params.script} --alignment-intersection {input.qry_view} --known-ngaps {input.qry_ngap} "
-        "--ngap-label NGAPASM --output {output.qry_view}"
+        "--ngap-label NGAPASM --add-label-description --output {output.qry_view}"
             " && "
         "{params.script} --alignment-intersection {input.trg_view} --known-ngaps {input.trg_ngap} "
-        "--ngap-label NGAPREF --output {output.trg_view}"
+        "--ngap-label NGAPREF --add-label-description --output {output.trg_view}"
 
 
 rule run_all_label_contig_alignments:
