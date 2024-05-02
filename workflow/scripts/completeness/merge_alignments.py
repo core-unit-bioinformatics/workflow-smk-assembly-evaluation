@@ -129,13 +129,19 @@ def produce_flagged_segment(row):
     both_gaps = row.bpl_label in GAP_LABELS and row.crs_label in GAP_LABELS
     # one is BRKOVL and the other indicates a gap, which is not a
     # gap in the alignment space, but definitely a discontinuity
-    # in the assembly space
+    # in the assembly space.
+    # If BRKOVL coincides with COMPLEX, error on the side of caution
+    # and label the region as DISCON.
     is_discon = (
         row.bpl_label in GAP_LABELS and row.crs_label in OVL_LABELS
         or
         row.bpl_label in OVL_LABELS and row.crs_label in GAP_LABELS
         or
         row.bpl_label in OVL_LABELS and row.crs_label in OVL_LABELS
+        or
+        row.bpl_label in OVL_LABELS and row.crs_label in COMPLEX_LABELS
+        or
+        row.bpl_label in COMPLEX_LABELS and row.crs_label in OVL_LABELS
     )
     is_complex = (
         row.bpl_label in GAP_LABELS and row.crs_label in COMPLEX_LABELS
