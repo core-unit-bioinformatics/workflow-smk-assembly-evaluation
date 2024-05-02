@@ -68,21 +68,6 @@ def initialize_aligned_segment(row, src_idx=None):
     if row.bpl_label in ISSUE_LABELS and row.crs_label in ISSUE_LABELS:
         # None segment triggers produce_flagged_segment()
         pass
-    elif row.bpl_label != row.crs_label:
-        # in case of disagreemnt between the aligners w.r.t. to the target
-        # sequence, simply build the segment that covers the more sequence
-        if row.bpl_size > row.crs_size:
-            bpl_context = f"{row.bpl_aln_context}::{row.bpl_label}::{row.bpl_blockid}"
-            crs_context = None
-            segment = Segment(row.bpl_seq, row.bpl_start, row.bpl_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
-            incomplete_aln_context = True
-        elif row.crs_size > row.bpl_size:
-            bpl_context = None
-            crs_context = f"{row.crs_aln_context}::{row.crs_label}::{row.crs_blockid}"
-            segment = Segment(row.crs_seq, row.crs_start, row.crs_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
-            incomplete_aln_context = True
-        else:
-            raise ValueError(f"Id. align. size: {row}")
     elif row.bpl_label in ISSUE_LABELS:
         # region aligned by coarse-grained aligner
         bpl_context = None
@@ -95,7 +80,23 @@ def initialize_aligned_segment(row, src_idx=None):
         crs_context = None
         segment = Segment(row.bpl_seq, row.bpl_start, row.bpl_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
         incomplete_aln_context = True
+    elif row.bpl_label != row.crs_label:
+        # in case of disagreemnt between the aligners w.r.t. to the target
+        # sequence, simply build the segment that covers more sequence
+        if row.bpl_size > row.crs_size:
+            bpl_context = f"{row.bpl_aln_context}::{row.bpl_label}::{row.bpl_blockid}"
+            crs_context = None
+            segment = Segment(row.bpl_seq, row.bpl_start, row.bpl_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
+            incomplete_aln_context = True
+        elif row.crs_size > row.bpl_size:
+            bpl_context = None
+            crs_context = f"{row.crs_aln_context}::{row.crs_label}::{row.crs_blockid}"
+            segment = Segment(row.crs_seq, row.crs_start, row.crs_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
+            incomplete_aln_context = True
+        else:
+            raise ValueError(f"Id. align. size: {row}")
     else:
+        # labels (= aligned target sequence) are identical
         assert row.bpl_seq == row.crs_seq
         seg_start = min(row.bpl_start, row.crs_start)
         seg_end = max(row.bpl_end, row.crs_end)
@@ -163,6 +164,8 @@ def merge_context(context_infos):
 
     sample_info = set()
     block_ids = set()
+    gap_contexts = set()
+    abundance_counts = col.Counter()
     for context in context_infos:
         # key part NONE --- see function initialize_aligned_segment
         # the other: see N gap loading
@@ -179,8 +182,10 @@ def merge_context(context_infos):
         sample_info.add(context_parts[0])
         other_seq = context_parts[1]
         if len(context_parts) < 4:
-            # sample + seq.name
-            pass
+            # gaps are by definition w/o alignment information
+            gap_contexts.add(src_context)
+            abundance_counts[context_parts[0]] += 1
+            abundance_counts[context_parts[0]] += 1
         else:
             other_start, other_end = context_parts[2].split("-")
             try:
@@ -198,11 +203,20 @@ def merge_context(context_infos):
     try:
         select_seq = spans.most_common(1)[0][0]
     except IndexError:
-        select_seq = "UNK"
-        sample = "UNK"
-        start = 0
-        end = 0
-        all_blocks = "NO-BLOCK-INFO"
+        if len(gap_contexts) > 0:
+            # record gap context
+            select_seq = abundance_counts.most_common(1)[0][0]
+            sample = abundance_counts.most_common(1)[0][0]
+            start = 0
+            end = 0
+            assert len(block_ids) > 0
+            all_blocks = "+".join(sorted(block_ids))
+        else:
+            select_seq = "UNK"
+            sample = "UNK"
+            all_blocks = "NO-BLOCK-INFO"
+            start = 0
+            end = 0
     else:
         start = min(all_starts[select_seq])
         end = max(all_ends[select_seq])
@@ -231,13 +245,9 @@ def merge_context_infos(bpl_contexts, crs_contexts):
     if ignore_bpl and ignore_crs:
         info_field = f"{bpl_sample}|{bpl_seq}"
     elif ignore_bpl:
-        start = crs_start
-        end = crs_end
-        info_field = f"{bpl_sample}|{bpl_seq}:{start}-{end}"
+        info_field = f"{crs_sample}|{crs_seq}:{crs_start}-{crs_end}"
     elif ignore_crs:
-        start = bpl_start
-        end = bpl_end
-        info_field = f"{bpl_sample}|{bpl_seq}:{start}-{end}"
+        info_field = f"{bpl_sample}|{bpl_seq}:{bpl_start}-{bpl_end}"
     else:
         start = min(bpl_start, crs_start)
         end = max(bpl_end, crs_end)
