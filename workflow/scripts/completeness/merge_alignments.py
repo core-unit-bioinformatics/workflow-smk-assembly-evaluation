@@ -102,7 +102,17 @@ def initialize_aligned_segment(row, src_idx=None):
             segment = Segment(row.crs_seq, row.crs_start, row.crs_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
             incomplete_aln_context = True
         else:
-            raise ValueError(f"Id. align. size: {row}")
+            #raise ValueError(f"Identical alignment size / different alignment targets: {row}")
+
+            # empirically, that indeed does happen (rarely) but only with very short and
+            # thus likely garbage assembled sequences. Since we only reach this code path
+            # if the two aligners disagree on the correct placement, there is no other heuristic
+            # to decide which alignment to favor. Hence, we assume that the base-level
+            # aligner has stronger evidence for its placement of the sequence.
+            bpl_context = f"{row.bpl_aln_context}::{row.bpl_label}::{row.bpl_blockid}"
+            crs_context = None
+            segment = Segment(row.bpl_seq, row.bpl_start, row.bpl_end, "ALN", bpl_context, crs_context, src_idx, row.Index)
+            incomplete_aln_context = True
     else:
         # labels (= aligned target sequence) are identical
         assert row.bpl_seq == row.crs_seq
