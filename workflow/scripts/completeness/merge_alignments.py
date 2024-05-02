@@ -54,6 +54,14 @@ def parse_command_line():
         help="Path to output table (TSV, BED-like)"
     )
 
+    parser.add_argument(
+        "--add-label-description", "-d",
+        action="store_true",
+        default=False,
+        dest="add_description",
+        help="Add label description to output table prefixed with '##'. Default: False"
+    )
+
     args = parser.parse_args()
 
     return args
@@ -397,10 +405,52 @@ def read_ngap_segments(file_path, processed_sequences, ngap_label):
 
 
 def get_intersection_header():
+    """ Read intersect tables of the two alignment outputs:
+    bpl = base-level alignments, e.g., produced with minimap2
+    crs = coarse-grained alignments, e.g., produced with mashmap
+
+    The prefixes bpl_ and crs_ are used throughout this script
+    to distinguish these two components in the intersection tables.
+    """
 
     commons = ["seq", "start", "end", "label", "aln_context", "size", "reflen", "blockid"]
     isect_columns = [f"bpl_{c}" for c in commons] + [f"crs_{c}" for c in commons] + ["overlap"]
     return isect_columns
+
+
+def get_label_description_header(ngap_label, prefix=""):
+
+    rows = []
+    rows.append(
+        f"{prefix} ALN: an aligned block supported by at least one aligner (base-level or coarse-grained)."
+    )
+    rows.append(
+        (
+            f"{prefix} ASMGAP: a gap, either in assembly-space (= broken sequence) or "
+            "in alignment-space (= gapped alignment / an alignment problem)."
+        )
+    )
+    rows.append(
+        (
+            f"{prefix} DISCON: discontinuity in the assembly (two different sequences), "
+            "but with an overlapping alignment in this region (= no simple gap)."
+        )
+    )
+    rows.append(
+        (
+            f"{prefix} COMPLEX: alignments are fully contained in other alignments in this region. "
+            "This can be an alignment artifact or indicate an assembly error and thus potentially "
+            "a gap."
+        )
+    )
+    rows.append(
+        (
+            f"{prefix} {ngap_label}: (if applicable) Known gaps due to unresolved sequence (N gaps). "
+            "This annotation/labeling is only enforced for the respective coordinate space."
+        )
+    )
+
+    return rows
 
 
 def main():
@@ -478,7 +528,13 @@ def main():
         segment_union, columns=["#seq", "start", "end", "label", "size", "align", "base_blocks", "coarse_blocks"]
     )
     args.output.parent.mkdir(exist_ok=True, parents=True)
-    out.to_csv(args.output, sep="\t", header=True, index=False)
+    if args.add_description:
+        desc_header = get_label_description_header(args.ngap_label, "##")
+        with xopen.xopen(args.output, "w") as bedlike:
+            _ = bedlike.write("\n".join(desc_header) + "\n")
+            out.to_csv(bedlike, sep="\t", header=True, index=False)
+    else:
+        out.to_csv(args.output, sep="\t", header=True, index=False)
 
     return 0
 
