@@ -107,10 +107,10 @@ rule merge_gaps_alignment_blocks:
     params:
         script=find_script("merge_alignments")
     shell:
-        "{params.script} --alignment-intersection {input.qry_view} --known-gaps {input.qry_ngap} "
+        "{params.script} --alignment-intersection {input.qry_view} --known-ngaps {input.qry_ngap} "
         "--ngap-label NGAPASM --output {output.qry_view}"
             " && "
-        "{params.script} --alignment-intersection {input.trg_view} --known-gaps {input.trg_ngap} "
+        "{params.script} --alignment-intersection {input.trg_view} --known-ngaps {input.trg_ngap} "
         "--ngap-label NGAPREF --output {output.trg_view}"
 
 
