@@ -422,30 +422,30 @@ def get_label_description_header(ngap_label, prefix=""):
 
     rows = []
     rows.append(
-        f"{prefix} ALN: an aligned block supported by at least one aligner (base-level or coarse-grained)."
+        f"{prefix}ALN: an aligned block supported by at least one aligner (base-level or coarse-grained)."
     )
     rows.append(
         (
-            f"{prefix} ASMGAP: a gap, either in assembly-space (= broken sequence) or "
-            "in alignment-space (= gapped alignment / an alignment problem)."
+            f"{prefix}ASMGAP: a gap, either in assembly-space (= broken sequence) or "
+            "in alignment-space (= fragmented alignment / an alignment problem)."
         )
     )
     rows.append(
         (
-            f"{prefix} DISCON: discontinuity in the assembly (two different sequences), "
+            f"{prefix}DISCON: discontinuity in the assembly (two different sequences), "
             "but with an overlapping alignment in this region (= no simple gap)."
         )
     )
     rows.append(
         (
-            f"{prefix} COMPLEX: alignments are fully contained in other alignments in this region. "
+            f"{prefix}COMPLEX: alignments are fully contained in other alignments in this region. "
             "This can be an alignment artifact or indicate an assembly error and thus potentially "
             "a gap."
         )
     )
     rows.append(
         (
-            f"{prefix} {ngap_label}: (if applicable) Known gaps due to unresolved sequence (N gaps). "
+            f"{prefix}{ngap_label}: (if applicable) Known gaps due to unresolved sequence (N gaps). "
             "This annotation/labeling is only enforced for the respective coordinate space."
         )
     )
@@ -529,7 +529,7 @@ def main():
     )
     args.output.parent.mkdir(exist_ok=True, parents=True)
     if args.add_description:
-        desc_header = get_label_description_header(args.ngap_label, "##")
+        desc_header = get_label_description_header(args.ngap_label, "## ")
         with xopen.xopen(args.output, "w") as bedlike:
             _ = bedlike.write("\n".join(desc_header) + "\n")
             out.to_csv(bedlike, sep="\t", header=True, index=False)
