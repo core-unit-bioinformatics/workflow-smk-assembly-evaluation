@@ -16,8 +16,8 @@ rule annotate_ngaps_in_reference:
     params:
         script=find_script("localize_ngaps")
     shell:
-        "{params.script} --fasta-input {input.asm_unit} "
-        "--output {output.bed} --name {wildcards.sample}"
+        "{params.script} --fasta-input {input.fasta} "
+        "--output {output.bed} --name {wildcards.refgenome}"
 
 
 rule generate_ngaps_annotation:
