@@ -40,6 +40,15 @@ def parse_command_line():
     )
 
     parser.add_argument(
+        "--exclude", "--ignore",
+        "--skip", "--discard",
+        type=lambda x: pl.Path(x).resolve(),
+        default=None,
+        dest="skip_seqs",
+        help="Text file listing sequences (by name) to be ignored / skipped over. Default: <NONE>"
+    )
+
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -108,6 +117,21 @@ def read_sequence_tags(file_path):
     return tags
 
 
+def load_discard_seq_names(file_path):
+
+    if not file_path.is_file():
+        skip_seqs = set()
+    else:
+        file_path = file_path.resolve(strict=True)
+        with xopen.xopen(file_path) as listing:
+            skip_seqs = set(listing.read().strip().split())
+        if len(skip_seqs) < 1:
+            raise ValueError(
+                f"No sequence names to skip loaded from file: {file_path}"
+            )
+    return skip_seqs
+
+
 def main():
 
     args = parse_command_line()
@@ -120,6 +144,8 @@ def main():
 
     file_tags = read_sequence_tags(args.seq_tags)
 
+    skip_seqs = load_discard_seq_names(args.skip_seqs)
+
     if args.output in ["stdout", "-", "/dev/stdout", ""]:
         outfile = sys.stdout.buffer
     else:
@@ -128,6 +154,7 @@ def main():
 
     processed_records = 0
     skipped_scraps = 0  # see above in arg parser
+    skipped_seqs = 0
     process_start = time.perf_counter()
     check_uniq_seqnames = col.defaultdict(list)
     with ctl.ExitStack() as exs:
@@ -153,6 +180,9 @@ def main():
                     processed_records += 1
                     if len(record.sequence) < args.skip_scraps:
                         skipped_scraps += 1
+                        continue
+                    if record.name in skip_seqs:
+                        skipped_seqs += 1
                         continue
                     check_uniq_seqnames[record.name].append(file_tag)
                     tagged_name = f"{record.name}{file_tag}"
@@ -195,6 +225,7 @@ def main():
             "\n\n=== fasta_tag_merge report ==="
             f"\nProcessed records: {processed_records}"
             f"\nSkipped scrap records: {skipped_scraps}"
+            f"\nSkipped seq. records by name: {skipped_seqs}"
             f"\nTotal processing time: ~{total_time} sec"
             f"\nTagging time (incl. I/O): ~{tagging_time} sec"
             f"\nTag evaluation time: ~{tag_eval_time} sec"
