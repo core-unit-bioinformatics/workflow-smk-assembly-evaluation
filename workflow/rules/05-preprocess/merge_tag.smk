@@ -40,7 +40,8 @@ rule merge_and_tag_asm_units:
         asm_seq = lambda wildcards: SAMPLE_INFOS[wildcards.sample][("asm", "all", "files")],
         tags = DIR_PROC.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.asm-tags.tsv"
-        )
+        ),
+        skip = lambda wildcards: SAMPLE_INFOS[wildcards.sample].get("skip_seqs", "")
     output:
         mrg_fasta = DIR_PROC.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.fasta"
@@ -56,9 +57,14 @@ rule merge_and_tag_asm_units:
         time_hrs = lambda wildcards, attempt: attempt * attempt
     params:
         script = find_script("fasta_tag_merge"),
-        buffer = int(5e8)
+        buffer = int(5e8),
+        set_skip_arg = lambda wildcards, input: (
+            f"--skip {input.skip}"
+            if pathlib.Path(input.skip).is_file()
+            else ""
+        )
     shell:
-        "{params.script} --input {input.asm_seq} --seq-tags {input.tags} "
+        "{params.script} --input {input.asm_seq} --seq-tags {input.tags} {params.set_skip_arg} "
             "--report --buffer-size {params.buffer} --output {output.mrg_fasta} 2> {log}"
 
 
@@ -84,18 +90,26 @@ rule dump_clean_assembly_regions:
     is skipped.
     """
     input:
-        fai = rules.index_merged_tagged_assembly_fasta.output.fai
+        fai = rules.index_merged_tagged_assembly_fasta.output.fai,
+        skip = lambda wildcards: SAMPLE_INFOS[wildcards.sample].get("skip_seqs", "")
     output:
         bed = DIR_PROC.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.sequences.bed"
         )
     run:
+        import pathlib as pl
         import pandas as pd
+        if pl.Path(input.skip).is_file():
+            with open(input.skip) as listing:
+                skip_seqs = set(listing.read().strip().split())
+        else:
+            skip_seqs = set()
         df = pd.read_csv(
             input.fai, sep="\t", usecols=[0,1],
             header=None, names=["contig", "end"]
         )
         df["start"] = 0
+        df = df.loc[~df["contig"].isin(skip_seqs), :].copy()
         df = df[["contig", "start", "end"]]
         df.sort_values("contig", inplace=True)
         with open(output.bed, "w") as dump:
