@@ -9,6 +9,7 @@ include: "00-prepare/settings.smk"
 include: "00-prepare/sample_table.smk"
 include: "00-prepare/source_setup.smk"
 
+include: "05-preprocess/filter_unit.smk"
 include: "05-preprocess/merge_tag.smk"
 include: "05-preprocess/ncbi_fcs.smk"
 include: "05-preprocess/remove_contam.smk"

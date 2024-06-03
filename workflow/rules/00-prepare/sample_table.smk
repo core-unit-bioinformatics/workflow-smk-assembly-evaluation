@@ -256,6 +256,12 @@ def get_asm_unit(wildcards):
     """
     if RUN_NCBI_FCS_ADAPTOR or RUN_NCBI_FCS_GX:
         path = rules.compress_clean_assembly_sequences.output.fagz
+    elif SAMPLE_INFOS[wildcards.sample].get("skip_seqs", None) is not None:
+        # we have a sample / an assembly with a couple of sequences that are
+        # listed in the exclusion file, hence we cannot read the raw
+        # source version of the assembly
+        # NB: the following rule triggers index generation, no need to check
+        path = rules.compress_index_filtered_assembly_unit.output.fagz
     else:
         sample = wildcards.sample
         asm_unit = wildcards.asm_unit
@@ -290,6 +296,10 @@ def get_clean_assembly_regions(wildcards):
     if RUN_NCBI_FCS_ADAPTOR or RUN_NCBI_FCS_GX:
         path = rules.define_clean_assembly_regions.output.tag_tig
     else:
+        # NB: the following rule checks for sequences to skip
+        # if defined in the sample sheet, i.e. the sequence
+        # output file is "clean" even if no contamination
+        # check is run
         path = rules.dump_clean_assembly_regions.output.bed
     return path
 
