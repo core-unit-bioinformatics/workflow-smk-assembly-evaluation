@@ -153,8 +153,8 @@ rule merge_compleasm_output_tables:
         all_issues = []
         for summary_file in input.summaries:
             summ_file_path = pl.Path(summary_file)
-            file_parts = summ_file_path.name.rsplit(".", 3)
-            assert file_parts[0] == wildcards.sample
+            file_parts = summ_file_path.parent.name.rsplit(".", 3)
+            assert file_parts[0] == wildcards.sample, file_parts
             asm_unit = file_parts[1]
             label_column = f"{asm_unit}_label"
             folder = pl.Path(summary_file).parent
@@ -165,12 +165,15 @@ rule merge_compleasm_output_tables:
             df = pd.read_csv(table_file, sep="\t", header=None, skiprows=1, names=table_header)
             to_merge = df[table_header[:2]].copy()
             to_merge.rename({"label": label_column}, axis=1, inplace=True)
+            to_merge.drop_duplicates("gene", inplace=True)
             to_merge.set_index("gene", inplace=True)
             merged.append(to_merge)
             has_start = ~pd.isnull(df["start"])
-            issues = df.loc[(df["label"] != "Single" & has_start), :].copy()
+            issues = df.loc[(df["label"] != "Single") & has_start, :].copy()
             issues["asm_unit"] = asm_unit
             issues = issues[["seq_name", "start", "end", "label", "gene", "asm_unit"]].copy()
+            issues["start"] = issues["start"].astype(int)
+            issues["end"] = issues["end"].astype(int)
             all_issues.append(issues)
 
         merged = pd.concat(merged, axis=1, ignore_index=False)
