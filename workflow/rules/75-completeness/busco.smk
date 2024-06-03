@@ -148,7 +148,6 @@ rule merge_compleasm_output_tables:
             "fraction", "frameshift_events",
             "best_gene", "codons"
         ]
-        label_column = f"{wildcards.asm_unit}_label"
 
         merged = []
         all_issues = []
@@ -157,6 +156,7 @@ rule merge_compleasm_output_tables:
             file_parts = summ_file_path.name.rsplit(".", 3)
             assert file_parts[0] == wildcards.sample
             asm_unit = file_parts[1]
+            label_column = f"{asm_unit}_label"
             folder = pl.Path(summary_file).parent
             table_file = folder.joinpath(
                 f"{wildcards.odb_name}", "full_table.tsv"
@@ -169,7 +169,7 @@ rule merge_compleasm_output_tables:
             merged.append(to_merge)
             has_start = ~pd.isnull(df["start"])
             issues = df.loc[(df["label"] != "Single" & has_start), :].copy()
-            issues["asm_unit"] = wildcards.asm_unit
+            issues["asm_unit"] = asm_unit
             issues = issues[["seq_name", "start", "end", "label", "gene", "asm_unit"]].copy()
             all_issues.append(issues)
 
