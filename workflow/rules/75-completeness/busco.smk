@@ -118,6 +118,74 @@ rule normalize_compleasm_summary:
     # END OF RUN BLOCK
 
 
+localrules: merge_compleasm_output_tables
+rule merge_compleasm_output_tables:
+    input:
+        summaries = expand(
+            rules.compleasm_busco_mode.output.summary,
+            asm_unit=ASSEMBLY_UNITS_MAIN,
+            allow_missing=True
+        )
+    output:
+        tsv = DIR_RES.joinpath(
+            "reports", "completeness", "busco_per_sample",
+            "{sample}.busco.{odb_name}.merged.tsv.gz"
+        ),
+        issues = DIR_RES.joinpath(
+            "regions", "{sample}",
+            "{sample}.busco.{odb_name}.issues.bed"
+        )
+    resources:
+        mem_mb = lambda wildcards, attempt: 2048 * attempt
+    run:
+        import pandas as pd
+        import pathlib as pl
+
+        table_header = [
+            "gene", "label", "seq_name",
+            "start", "end", "strand",
+            "score", "length", "identity",
+            "fraction", "frameshift_events",
+            "best_gene", "codons"
+        ]
+        label_column = f"{wildcards.asm_unit}_label"
+
+        merged = []
+        all_issues = []
+        for summary_file in input.summaries:
+            summ_file_path = pl.Path(summary_file)
+            file_parts = summ_file_path.name.rsplit(".", 3)
+            assert file_parts[0] == wildcards.sample
+            asm_unit = file_parts[1]
+            folder = pl.Path(summary_file).parent
+            table_file = folder.joinpath(
+                f"{wildcards.odb_name}", "full_table.tsv"
+            )
+            assert table_file.is_file()
+            df = pd.read_csv(table_file, sep="\t", header=None, skiprows=1, names=table_header)
+            to_merge = df[table_header[:2]].copy()
+            to_merge.rename({"label": label_column}, axis=1, inplace=True)
+            to_merge.set_index("gene", inplace=True)
+            merged.append(to_merge)
+            has_start = ~pd.isnull(df["start"])
+            issues = df.loc[(df["label"] != "Single" & has_start), :].copy()
+            issues["asm_unit"] = wildcards.asm_unit
+            issues = issues[["seq_name", "start", "end", "label", "gene", "asm_unit"]].copy()
+            all_issues.append(issues)
+
+        merged = pd.concat(merged, axis=1, ignore_index=False)
+        merged.sort_index(inplace=True)
+        merged.to_csv(output.tsv, sep="\t", header=True, index=True, index_label="gene")
+
+        all_issues = pd.concat(all_issues, axis=0, ignore_index=False)
+        all_issues.sort_values(["seq_name", "start", "end"], inplace=True)
+
+        with open(output.issues, "w") as dump:
+            _ = dump.write("#")
+            all_issues.to_csv(dump, sep="\t", header=True, index=False)
+    # END OF RUN BLOCK
+
+
 localrules: aggregate_compleasm_summaries
 rule aggregate_compleasm_summaries:
     """URGENT TODO --- odb names as parameter!
@@ -152,6 +220,16 @@ rule run_all_compleasm:
         report = expand(
             rules.aggregate_compleasm_summaries.output.tsv,
             run_id=RUN_SUFFIX
+        ),
+        sample_merge = expand(
+            rules.merge_compleasm_output_tables.output.tsv,
+            sample=SAMPLES,
+            odb_name=["eukaryota_odb10", "primates_odb10"]
+        ),
+        issues = expand(
+            rules.merge_compleasm_output_tables.output.bed,
+            sample=SAMPLES,
+            odb_name=["eukaryota_odb10", "primates_odb10"]
         )
 
 
