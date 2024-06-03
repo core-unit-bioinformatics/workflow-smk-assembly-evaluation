@@ -12,7 +12,7 @@ rule filter_asm_unit:
     will be non-empty
     """
     input:
-        fasta = lambda wildcards: SAMPLE_INFOS[sample][
+        fasta = lambda wildcards: SAMPLE_INFOS[wildcards.sample][
             ("asm", wildcards.asm_unit.split("-")[1], None)
         ],
         skip = lambda wildcards: SAMPLE_INFOS[wildcards.sample]["skip_seqs"]
@@ -21,6 +21,8 @@ rule filter_asm_unit:
             DIR_PROC.joinpath(
                 "05-preprocess", "filter_unit", "{sample}.{asm_unit}.filtered.fasta"
         ))
+    log:
+        DIR_LOG.joinpath("05-preprocess", "filter_unit", "{sample}.{asm_unit}.filtered.log")
     conda:
         DIR_ENVS.joinpath("pyutils.yaml")
     resources:
@@ -29,7 +31,7 @@ rule filter_asm_unit:
     params:
         script = find_script("fasta_tag_merge"),
     shell:
-        "{params.script} --input {input.asm_seq} --skip {input.skip} "
+        "{params.script} --input {input.fasta} --skip {input.skip} "
             "--report 2> {log} --output {output.fasta}"
 
 
