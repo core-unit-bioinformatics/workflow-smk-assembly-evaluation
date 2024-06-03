@@ -227,7 +227,7 @@ rule run_all_compleasm:
             odb_name=["eukaryota_odb10", "primates_odb10"]
         ),
         issues = expand(
-            rules.merge_compleasm_output_tables.output.bed,
+            rules.merge_compleasm_output_tables.output.issues,
             sample=SAMPLES,
             odb_name=["eukaryota_odb10", "primates_odb10"]
         )
