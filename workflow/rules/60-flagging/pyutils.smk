@@ -31,7 +31,7 @@ def flatten_window_readcov_columns(column_level_names, columns):
 def load_reference_centromere_annotation(ref_name):
 
     try:
-        annotation = refgenomes["refgenomes"][ref_name]["censat"]
+        annotation = config["refgenomes"][ref_name]["censat"]
     except KeyError:
         logerr(f"No centromere annotation found in config for: {ref_name}")
         raise ValueError(f"No centromere annotation found in config: {ref_name}")
