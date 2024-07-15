@@ -10,6 +10,7 @@ refgenomes:
     female: chm13v2.0_maskedY.fasta
     female-hap: chm13v2.0.female-hap.fasta
     any: chm13v2.0.fasta
+    censat: t2tv2_censat-v21_par_exclude.bed
 
 complete_reference: t2tv2
 

@@ -7,7 +7,8 @@ rule asm_misjoins_paftools:
     "paftools.js misjoin" parameter "-c FILE   BED for centromeres"
     """
     input:
-        paf = rules.minimap_assembly_to_reference_align_paf.output.paf
+        paf = rules.minimap_assembly_to_reference_align_paf.output.paf,
+        cen_bed = lambda wildcards: load_reference_centromere_annotation(wildcards.refgenome)
     output:
         txt = DIR_PROC.joinpath(
             "60-flagging", "misjoins",
@@ -16,7 +17,7 @@ rule asm_misjoins_paftools:
     conda:
         DIR_ENVS.joinpath("aligner", "minimap.yaml")
     shell:
-        "paftools.js misjoin -e {input.paf} > {output.txt}"
+        "paftools.js misjoin -c {input.cen_bed} -e {input.paf} > {output.txt}"
 
 
 rule run_all_paftools_misjoin:
@@ -24,6 +25,6 @@ rule run_all_paftools_misjoin:
         txt = expand(
             rules.asm_misjoins_paftools.output.txt,
             sample=SAMPLES,
-            asm_unit=ASSEMBLY_UNITS_NO_CONTAM,
+            asm_unit=ASSEMBLY_UNITS_MAIN,
             refgenome=COMPLETE_REF_GENOME
         )
