@@ -41,7 +41,7 @@ rule merge_and_tag_asm_units:
         tags = DIR_PROC.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.asm-tags.tsv"
         ),
-        skip = lambda wildcards: SAMPLE_INFOS[wildcards.sample].get("skip_seqs", "")
+        skip = lambda wildcards: SAMPLE_INFOS[wildcards.sample].get("skip_seqs", [])
     output:
         mrg_fasta = DIR_PROC.joinpath(
             "05-preprocess", "merge_tag_asm", "{sample}.asm-mrg-tag.fasta"
@@ -60,7 +60,7 @@ rule merge_and_tag_asm_units:
         buffer = int(5e8),
         set_skip_arg = lambda wildcards, input: (
             f"--skip {input.skip}"
-            if pathlib.Path(input.skip).is_file()
+            if not isinstance(input.skip, list) and pathlib.Path(input.skip).is_file()
             else ""
         )
     shell:
