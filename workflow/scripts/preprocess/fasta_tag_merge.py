@@ -119,7 +119,7 @@ def read_sequence_tags(file_path):
 
 def load_discard_seq_names(file_path):
 
-    if not file_path.is_file():
+    if file_path is None:
         skip_seqs = set()
     else:
         file_path = file_path.resolve(strict=True)
