@@ -14,3 +14,7 @@ if True:  # TODO: make proper switch
     ASSEMBLY_COMPLETENESS_OUTPUT.extend(
         rules.run_all_compleasm.input
     )
+
+    ASSEMBLY_COMPLETENESS_OUTPUT.extend(
+        rules.run_all_label_contig_alignments.input
+    )
