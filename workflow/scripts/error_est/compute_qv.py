@@ -189,6 +189,15 @@ def read_subtract_lengths(subtract_lengths):
                 comment="#", usecols=[0,1,2]
             )
             check_table_is_likely_empty(df)
+            # TODO - this is a violation of DRY (see below)
+            # simplify control flow here
+            df.columns = ["contig", "start", "end"]
+            df["length"] = df["end"] - df["start"]
+            subtract_lookup = dict(
+                (k, v) for k, v in df.groupby("contig")["length"].sum().items()
+            )
+            # NB: col.Counter() returns 0 for non-ex keys
+            subtract_lookup = col.Counter(subtract_lookup)
         except (ValueError, EmptyDataError):
             err_msg = (
                 f"\nError parsing file: {subtract_lengths}\n"
